@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bike Label Generator</title>
+    <title>Cyclical Nature Bicycles - Bike Label Generator</title>
     <style>
         /* --- Screen UI Canvas Layout --- */
         body {
@@ -93,21 +93,6 @@
             box-sizing: border-box;
             width: 100%;
         }
-        .checkbox-label {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.95rem;
-            user-select: none;
-        }
-        .checkbox-input {
-            width: 18px !important;
-            height: 18px !important;
-            margin: 0;
-            cursor: pointer;
-        }
         button {
             background-color: #0066cc;
             color: white;
@@ -153,6 +138,7 @@
             align-items: center;
             text-align: center;
             overflow: hidden;
+            position: relative; /* Setup anchor point for isolated bottom tagline text */
         }
         
         .logo-wrapper {
@@ -168,6 +154,7 @@
             object-fit: contain;
         }
 
+        /* Geometric divider spacing configurations */
         .top-divider {
             width: 100%;
             border-top: 3px solid #000000;
@@ -221,20 +208,26 @@
             margin-top: 4px;
         }
 
-        .bike-kickstand {
-            font-weight: 700;
-            color: #333333;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-top: 3px;
-        }
-
         .price-display {
             font-weight: 900;
             color: #000000;
             width: 100%;
             line-height: 1;
             padding-top: 4px;
+        }
+
+        /* Balanced tagline typography sizing definition */
+        .bike-kickstand {
+            position: absolute;
+            bottom: 0.08in;
+            left: 0;
+            width: 100%;
+            font-size: 8pt; /* Increased size slightly for enhanced readability */
+            font-weight: 700;
+            letter-spacing: 0.2px;
+            color: #444444;
+            text-transform: uppercase;
+            text-align: center;
         }
 
         /* --- Absolute Print Mode Rules (Zero-Margin Lock) --- */
@@ -266,6 +259,7 @@
                 height: 6in !important;
                 box-sizing: border-box !important;
                 overflow: hidden !important;
+                position: relative !important;
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
             }
@@ -323,11 +317,12 @@
                 <label for="input-price">Retail Price ($)</label>
                 <input type="number" id="input-price" placeholder="e.g., 1450" autocomplete="off">
             </div>
-            <div class="form-group" style="justify-content: center; padding-top: 22px;">
-                <label class="checkbox-label">
-                    <input type="checkbox" id="input-kickstand" class="checkbox-input">
-                    w/ kickstand
+            <div class="form-group" style="justify-content: center; padding-top: 15px;">
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin-bottom: 2px;">
+                    <input type="checkbox" id="chk-kickstand" checked style="width: auto; transform: scale(1.1); margin: 0; cursor: pointer;">
+                    <span style="font-weight: 600; font-size: 0.9rem;">Kickstand Tagline?</span>
                 </label>
+                <span style="font-size: 0.72rem; color: #666; padding-left: 24px; font-weight: 500;">Uncheck if an e-bike</span>
             </div>
         </div>
 
@@ -340,15 +335,10 @@
     <div id="label-preview-container"></div>
 
     <script>
-        const standardSizes = ["XS", "S", "M", "M/L", "L", "XL", "XXL"];
-        
-        // Exact real-world industry standard frame sizes used by major manufacturers
-        const cmSizes = [
-            "44cm", "47cm", "48cm", "49cm", "50cm", "51cm", "52cm", "53cm", 
-            "54cm", "55cm", "56cm", "57cm", "58cm", "60cm", "61cm", "62cm",
-        ];
+        const standardSizes = ["", "XS", "S", "M", "M/L", "L", "XL", "XXL"];
+        const cmSizes = ["", "47cm", "48cm", "49cm", "50cm", "52cm", "53cm", "54cm", "55cm", "56cm", "58cm", "61cm"];
 
-        // Size expansion data map
+        // Size expansion descriptive map dictionary
         const sizeExpansionMap = {
             "XS": "X-Small",
             "S": "Small",
@@ -368,7 +358,7 @@
             targetedArray.forEach(size => {
                 const opt = document.createElement('option');
                 opt.value = size;
-                opt.innerHTML = size;
+                opt.innerHTML = size === "" ? "-- Blank / None --" : size;
                 sizeSelect.appendChild(opt);
             });
         }
@@ -394,7 +384,7 @@
             const brand = document.getElementById('input-brand').value.trim();
             const model = document.getElementById('input-model').value.trim();
             const selectedSizeCode = document.getElementById('input-size').value;
-            const hasKickstand = document.getElementById('input-kickstand').checked;
+            const kickstandChecked = document.getElementById('chk-kickstand').checked;
             let price = document.getElementById('input-price').value.trim();
 
             if (!brand || !model || !price) {
@@ -402,8 +392,8 @@
                 return;
             }
 
-            // Expand shortcode inputs to clean full-text strings
-            const printableSizeText = sizeExpansionMap[selectedSizeCode] || selectedSizeCode;
+            // Map shortcode parameters to readable word descriptors if active
+            const printableSizeText = selectedSizeCode ? (sizeExpansionMap[selectedSizeCode] || selectedSizeCode) : "";
 
             price = parseFloat(price).toLocaleString('en-US', {
                 style: 'currency',
@@ -426,26 +416,25 @@
                 <div class="product-info-cluster">
                     <div id="txt-brand" class="text-line bike-brand">${brand}</div>
                     <div id="txt-model" class="text-line bike-model">${model}</div>
-                    <div id="txt-size" class="text-line bike-size">${printableSizeText}</div>
-                    ${hasKickstand ? `<div id="txt-kickstand" class="text-line bike-kickstand">w/ kickstand</div>` : ''}
+                    ${printableSizeText ? `<div id="txt-size" class="text-line bike-size">${printableSizeText}</div>` : ''}
                 </div>
                 <div class="bottom-divider"></div>
                 <div id="txt-price" class="text-line price-display">${price}</div>
+                ${kickstandChecked ? `<div class="bike-kickstand">Kickstand available for extra charge.</div>` : ''}
             `;
             
             container.appendChild(labelDiv);
             document.getElementById('preview-title').style.display = 'block';
 
-            // Fit strings to edge boundaries to utilize optimal tag real estate
+            // Scale rules sequentially targeting boundaries safely
             applyShrinkToFit('txt-brand', 68); 
             applyShrinkToFit('txt-model', 44); 
-            applyShrinkToFit('txt-size', 38);  
-            if (hasKickstand) {
-                applyShrinkToFit('txt-kickstand', 24);
+            if (printableSizeText) {
+                applyShrinkToFit('txt-size', 38);  
             }
             applyShrinkToFit('txt-price', 85); 
 
-            // Handle delayed print dialog for asset loading verification
+            // Handle print dialog invocation automatically upon asset verification
             const logoImg = document.getElementById('shop-logo-img');
             const triggerPrint = () => {
                 setTimeout(() => {
