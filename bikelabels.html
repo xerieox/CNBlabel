@@ -222,7 +222,7 @@
             bottom: 0.08in;
             left: 0;
             width: 100%;
-            font-size: 8pt; /* Increased size slightly for enhanced readability */
+            font-size: 8pt;
             font-weight: 700;
             letter-spacing: 0.2px;
             color: #444444;
@@ -319,10 +319,11 @@
             </div>
             <div class="form-group" style="justify-content: center; padding-top: 15px;">
                 <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin-bottom: 2px;">
-                    <input type="checkbox" id="chk-kickstand" checked style="width: auto; transform: scale(1.1); margin: 0; cursor: pointer;">
-                    <span style="font-weight: 600; font-size: 0.9rem;">Kickstand Tagline?</span>
+                    <!-- Defaults to unchecked state -->
+                    <input type="checkbox" id="chk-kickstand" style="width: auto; transform: scale(1.1); margin: 0; cursor: pointer;">
+                    <span style="font-weight: 600; font-size: 0.9rem;">Kickstand?</span>
                 </label>
-                <span style="font-size: 0.72rem; color: #666; padding-left: 24px; font-weight: 500;"></span>
+                <span style="font-size: 0.72rem; color: #666; padding-left: 24px; font-weight: 500;">Check if kickstand is pre-installed</span>
             </div>
         </div>
 
@@ -408,6 +409,7 @@
             const labelDiv = document.createElement('div');
             labelDiv.className = 'dymo-4x6';
             
+            // Inverted layout template injection logic: runs tagline if the box is UNCHECKED
             labelDiv.innerHTML = `
                 <div class="logo-wrapper">
                     <img id="shop-logo-img" src="https://i.postimg.cc/hj7x8STM/CNB-final-logo-no-tagline.jpg" class="shop-logo" alt="Cyclical Nature Bicycles Logo">
@@ -420,7 +422,7 @@
                 </div>
                 <div class="bottom-divider"></div>
                 <div id="txt-price" class="text-line price-display">${price}</div>
-                ${kickstandChecked ? `<div class="bike-kickstand">Kickstand available for extra charge.</div>` : ''}
+                ${!kickstandChecked ? `<div class="bike-kickstand">Kickstand available for extra charge.</div>` : ''}
             `;
             
             container.appendChild(labelDiv);
