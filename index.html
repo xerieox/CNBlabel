@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cyclical Nature Bicycles - Label Generator</title>
+    <title>CNB Label Generator</title>
     <style>
         /* --- Screen Styles --- */
         body {
@@ -166,7 +166,6 @@
 </head>
 <body>
 
-    <!-- Configuration Panel (Hidden During Print) -->
     <div class="no-print-container no-print">
         <h1>Weekly Cash Label Generator</h1>
         <div class="form-group">
@@ -178,7 +177,6 @@
 
     <div class="preview-heading no-print" id="preview-title" style="display: none;">Label Print Preview</div>
     
-    <!-- Target Container for Generated Labels -->
     <div id="label-preview-container"></div>
 
     <script>
@@ -215,7 +213,7 @@
             }
 
             const container = document.getElementById('label-preview-container');
-            container.innerHTML = ''; // Clear previous preview layouts
+            container.innerHTML = ''; // Clear previous layout
             
             const parts = weekVal.split('-W');
             const year = parseInt(parts[0], 10);
@@ -245,6 +243,12 @@
             });
 
             document.getElementById('preview-title').style.display = 'block';
+
+            // Automatically trigger the print dialog after a microscopic delay 
+            // to ensure the browser has completely finished rendering the tags.
+            setTimeout(() => {
+                window.print();
+            }, 50);
         }
 
         function createLabelMarkup(action, subtext, dateStr) {
