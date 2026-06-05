@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bike Label Generator</title>
-  <link rel="icon" type="image/jpeg" href="https://i.postimg.cc/hj7x8STM/CNB-final-logo-no-tagline.jpg">
     <style>
         /* --- Screen UI Canvas Layout --- */
         body {
@@ -94,6 +93,21 @@
             box-sizing: border-box;
             width: 100%;
         }
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95rem;
+            user-select: none;
+        }
+        .checkbox-input {
+            width: 18px !important;
+            height: 18px !important;
+            margin: 0;
+            cursor: pointer;
+        }
         button {
             background-color: #0066cc;
             color: white;
@@ -154,7 +168,6 @@
             object-fit: contain;
         }
 
-        /* Geometric divider spacing configurations */
         .top-divider {
             width: 100%;
             border-top: 3px solid #000000;
@@ -206,6 +219,14 @@
             color: #000000;
             text-transform: uppercase;
             margin-top: 4px;
+        }
+
+        .bike-kickstand {
+            font-weight: 700;
+            color: #333333;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 3px;
         }
 
         .price-display {
@@ -261,7 +282,7 @@
     <header class="main-header no-print">
         <div class="brand-title">Cyclical Nature Bicycles</div>
         <nav class="nav-links">
-            <a href="index.html">Open/Close Cash</a>
+            <a href="index.html">Cash Labels</a>
             <a href="bikelabels.html" class="active">Bike Labels</a>
         </nav>
     </header>
@@ -302,6 +323,12 @@
                 <label for="input-price">Retail Price ($)</label>
                 <input type="number" id="input-price" placeholder="e.g., 1450" autocomplete="off">
             </div>
+            <div class="form-group" style="justify-content: center; padding-top: 22px;">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="input-kickstand" class="checkbox-input">
+                    w/ kickstand
+                </label>
+            </div>
         </div>
 
         <button onclick="generateBikeLabel()">Generate & Print Tag</button>
@@ -314,7 +341,13 @@
 
     <script>
         const standardSizes = ["XS", "S", "M", "M/L", "L", "XL", "XXL"];
-        const cmSizes = ["47cm", "48cm", "49cm", "50cm", "52cm", "53cm", "54cm", "56cm", "58cm", "61cm", "63cm"];
+        
+        // Exact real-world industry standard frame sizes used by major manufacturers
+        const cmSizes = [
+            "44cm", "47cm", "48cm", "49cm", "50cm", "51cm", "52cm", "53cm", 
+            "54cm", "55cm", "56cm", "57cm", "58cm", "60cm", "61cm", "62cm",
+            "Universal"
+        ];
 
         // Size expansion data map
         const sizeExpansionMap = {
@@ -325,6 +358,7 @@
             "L": "Large",
             "XL": "X-Large",
             "XXL": "XX-Large"
+            "Universal": "Universal"
         };
 
         function updateSizeDropdown() {
@@ -362,6 +396,7 @@
             const brand = document.getElementById('input-brand').value.trim();
             const model = document.getElementById('input-model').value.trim();
             const selectedSizeCode = document.getElementById('input-size').value;
+            const hasKickstand = document.getElementById('input-kickstand').checked;
             let price = document.getElementById('input-price').value.trim();
 
             if (!brand || !model || !price) {
@@ -394,6 +429,7 @@
                     <div id="txt-brand" class="text-line bike-brand">${brand}</div>
                     <div id="txt-model" class="text-line bike-model">${model}</div>
                     <div id="txt-size" class="text-line bike-size">${printableSizeText}</div>
+                    ${hasKickstand ? `<div id="txt-kickstand" class="text-line bike-kickstand">w/ kickstand</div>` : ''}
                 </div>
                 <div class="bottom-divider"></div>
                 <div id="txt-price" class="text-line price-display">${price}</div>
@@ -406,6 +442,9 @@
             applyShrinkToFit('txt-brand', 68); 
             applyShrinkToFit('txt-model', 44); 
             applyShrinkToFit('txt-size', 38);  
+            if (hasKickstand) {
+                applyShrinkToFit('txt-kickstand', 24);
+            }
             applyShrinkToFit('txt-price', 85); 
 
             // Handle delayed print dialog for asset loading verification
