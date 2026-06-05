@@ -300,8 +300,9 @@
             <div class="form-group">
                 <label for="size-type">Sizing Metric</label>
                 <select id="size-type" onchange="updateSizeDropdown()">
-                    <option value="standard">Standard (XS - XL)</option>
-                    <option value="cm">Centimeter (cm)</option>
+                <option value="standard">Standard (XS - XL)</option>
+                <option value="cm">Centimeter (cm)</option>
+                <option value="kids">Kids Bikes (inches)</option>
                 </select>
             </div>
             <div class="form-group">
@@ -337,7 +338,8 @@
 
     <script>
         const standardSizes = ["", "XS", "S", "M", "M/L", "L", "XL", "XXL"];
-        const cmSizes = ["", "47cm", "48cm", "49cm", "50cm", "51cm", "52cm", "53cm", "54cm", "55cm", "56cm", "58cm", "61cm"];
+        const cmSizes = ["", "47cm", "48cm", "49cm", "50cm", "52cm", "53cm", "54cm", "55cm", "56cm", "58cm", "61cm"];
+        const kidsSizes = ["", "12\"", "14\"", "16\"", "18\"", "20\"", "24\""];
 
         // Size expansion descriptive map dictionary
         const sizeExpansionMap = {
@@ -355,7 +357,14 @@
             const sizeSelect = document.getElementById('input-size');
             sizeSelect.innerHTML = '';
             
-            const targetedArray = (type === 'standard') ? standardSizes : cmSizes;
+            let targetedArray;
+if (type === 'standard') {
+    targetedArray = standardSizes;
+} else if (type === 'cm') {
+    targetedArray = cmSizes;
+} else if (type === 'kids') {
+    targetedArray = kidsSizes;
+}
             targetedArray.forEach(size => {
                 const opt = document.createElement('option');
                 opt.value = size;
