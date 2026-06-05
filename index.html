@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CNB Label Generator</title>
+    <title>Cyclical Nature Bicycles - Label Generator</title>
     <style>
         /* --- Screen Styles --- */
         body {
@@ -11,18 +11,59 @@
             background-color: #f4f6f8;
             color: #333;
             margin: 0;
-            padding: 20px;
+            padding: 0;
         }
+
+        /* --- Navigation Bar (Hidden on Print) --- */
+        .main-header {
+            background-color: #ffffff;
+            padding: 15px 40px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+        .brand-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #111;
+            letter-spacing: -0.2px;
+        }
+        .nav-links {
+            display: flex;
+            gap: 15px;
+        }
+        .nav-links a {
+            text-decoration: none;
+            color: #555;
+            font-weight: 600;
+            font-size: 0.95rem;
+            padding: 8px 16px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+        .nav-links a:hover {
+            color: #0066cc;
+            background-color: #f0f7ff;
+        }
+        .nav-links a.active {
+            color: #0066cc;
+            background-color: #e6f2ff;
+            cursor: default;
+        }
+
+        /* --- Control Panel Container --- */
         .no-print-container {
             max-width: 600px;
             margin: 0 auto 30px auto;
             background: #ffffff;
             padding: 25px;
             border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
         }
         h1 {
-            font-size: 1.5rem;
+            font-size: 1.3rem;
             margin-top: 0;
             color: #111;
             border-bottom: 2px solid #eaeaea;
@@ -72,6 +113,7 @@
             flex-direction: column;
             align-items: center;
             gap: 15px;
+            padding-bottom: 40px;
         }
 
         /* --- Core Label Design (DYMO 30336 Specs: 1" x 2-1/8") --- */
@@ -149,6 +191,7 @@
             }
             #label-preview-container {
                 gap: 0;
+                padding-bottom: 0;
             }
             .dymo-30336 {
                 border: none; /* Disappears on physical print output */
@@ -166,6 +209,16 @@
 </head>
 <body>
 
+    <!-- Main Navigation Header Bar -->
+    <header class="main-header no-print">
+        <div class="brand-title">Cyclical Nature Bicycles</div>
+        <nav class="nav-links">
+            <a href="index.html" class="active">Cash Labels</a>
+            <a href="bikelabels.html">Bike Labels</a>
+        </nav>
+    </header>
+
+    <!-- Configuration Panel (Hidden During Print) -->
     <div class="no-print-container no-print">
         <h1>Weekly Cash Label Generator</h1>
         <div class="form-group">
@@ -177,6 +230,7 @@
 
     <div class="preview-heading no-print" id="preview-title" style="display: none;">Label Print Preview</div>
     
+    <!-- Target Container for Generated Labels -->
     <div id="label-preview-container"></div>
 
     <script>
@@ -244,8 +298,7 @@
 
             document.getElementById('preview-title').style.display = 'block';
 
-            // Automatically trigger the print dialog after a microscopic delay 
-            // to ensure the browser has completely finished rendering the tags.
+            // Automatically trigger the print dialog after a microscopic delay
             setTimeout(() => {
                 window.print();
             }, 50);
