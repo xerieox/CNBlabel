@@ -337,20 +337,21 @@
     <div id="label-preview-container"></div>
 
     <script>
-        const standardSizes = ["", "XS", "S", "M", "M/L", "L", "XL", "XXL"];
+        const standardSizes = ["", "XS", "S", "S/M", "M", "M/L", "L", "XL", "XXL"];
         const cmSizes = ["", "47cm", "48cm", "49cm", "50cm", "52cm", "53cm", "54cm", "55cm", "56cm", "58cm", "61cm"];
         const kidsSizes = ["", "12\"", "14\"", "16\"", "18\"", "20\"", "24\""];
 
         // Size expansion descriptive map dictionary
-        const sizeExpansionMap = {
-            "XS": "X-Small",
-            "S": "Small",
-            "M": "Medium",
-            "M/L": "Medium / Large",
-            "L": "Large",
-            "XL": "X-Large",
-            "XXL": "XX-Large"
-        };
+       const sizeExpansionMap = {
+    "XS": "X-Small",
+    "S": "Small",
+    "S/M": "Small / Medium",
+    "M": "Medium",
+    "M/L": "Medium / Large",
+    "L": "Large",
+    "XL": "X-Large",
+    "XXL": "XX-Large"
+};
 
         function updateSizeDropdown() {
             const type = document.getElementById('size-type').value;
