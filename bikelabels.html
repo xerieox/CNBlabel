@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bike Label Generator</title>
+  <link rel="icon" type="image/jpeg" href="https://i.postimg.cc/hj7x8STM/CNB-final-logo-no-tagline.jpg">
+    <style>
+        /* --- Screen UI Canvas Layout --- */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f6f8;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* --- Navigation Bar --- */
+        .main-header {
+            background-color: #ffffff;
+            padding: 15px 40px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+        .brand-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #111;
+            letter-spacing: -0.2px;
+        }
+        .nav-links {
+            display: flex;
+            gap: 15px;
+        }
+        .nav-links a {
+            text-decoration: none;
+            color: #555;
+            font-weight: 600;
+            font-size: 0.95rem;
+            padding: 8px 16px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+        .nav-links a:hover {
+            color: #0066cc;
+            background-color: #f0f7ff;
+        }
+        .nav-links a.active {
+            color: #0066cc;
+            background-color: #e6f2ff;
+            cursor: default;
+        }
+
+        /* --- Input Control Panel Container --- */
+        .no-print-container {
+            max-width: 600px;
+            margin: 0 auto 30px auto;
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        h1 {
+            font-size: 1.3rem;
+            margin-top: 0;
+            color: #111;
+            border-bottom: 2px solid #eaeaea;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .form-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .form-group {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            font-weight: 600;
+            margin-bottom: 6px;
+            font-size: 0.9rem;
+        }
+        input[type="text"], input[type="number"], select {
+            padding: 10px;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            width: 100%;
+        }
+        button {
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.2s;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #0052a3;
+        }
+        .preview-heading {
+            max-width: 4in;
+            margin: 0 auto 10px auto;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        /* --- Precise 4x6 Label Grid Layout --- */
+        #label-preview-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-bottom: 60px;
+        }
+        .dymo-4x6 {
+            background: white;
+            box-sizing: border-box;
+            width: 4in;
+            height: 6in;
+            padding: 0.3in 0.2in;
+            border: 1px dashed #999; /* Visual frame guide for desktop view */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            text-align: center;
+            overflow: hidden;
+        }
+        
+        .logo-wrapper {
+            width: 100%;
+            height: 1.3in;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .shop-logo {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        /* Geometric divider spacing configurations */
+        .top-divider {
+            width: 100%;
+            border-top: 3px solid #000000;
+            margin-top: 0.15in;
+            margin-bottom: 0.02in;
+        }
+        
+        .bottom-divider {
+            width: 100%;
+            border-top: 3px solid #000000;
+            margin-top: 0.02in;
+            margin-bottom: 0.15in;
+        }
+        
+        .product-info-cluster {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            flex-grow: 1;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .text-line {
+            display: block;
+            width: 100%;
+            white-space: nowrap;
+            overflow: hidden;
+            box-sizing: border-box;
+            line-height: 1.1;
+        }
+
+        .bike-brand {
+            font-weight: 900;
+            text-transform: uppercase;
+            color: #000000;
+        }
+
+        .bike-model {
+            font-weight: 500;
+            color: #111111;
+            margin-top: 2px;
+            letter-spacing: -0.5px;
+        }
+
+        .bike-size {
+            font-weight: 900;
+            color: #000000;
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+
+        .price-display {
+            font-weight: 900;
+            color: #000000;
+            width: 100%;
+            line-height: 1;
+            padding-top: 4px;
+        }
+
+        /* --- Absolute Print Mode Rules (Zero-Margin Lock) --- */
+        @media print {
+            html, body {
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 4in !important;
+                height: 6in !important;
+                overflow: hidden !important;
+                background: #ffffff;
+            }
+            .no-print, .main-header, .no-print-container, .preview-heading {
+                display: none !important;
+            }
+            #label-preview-container {
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 4in !important;
+                height: 6in !important;
+                overflow: hidden !important;
+                display: block !important;
+            }
+            .dymo-4x6 {
+                border: none !important;
+                margin: 0 !important;
+                padding: 0.3in 0.2in !important;
+                width: 4in !important;
+                height: 6in !important;
+                box-sizing: border-box !important;
+                overflow: hidden !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+            @page {
+                size: 4in 6in;
+                margin: 0 !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Main Navigation Header Bar -->
+    <header class="main-header no-print">
+        <div class="brand-title">Cyclical Nature Bicycles</div>
+        <nav class="nav-links">
+            <a href="index.html">Cash Labels</a>
+            <a href="bikelabels.html" class="active">Bike Labels</a>
+        </nav>
+    </header>
+
+    <!-- Configuration Input Panel -->
+    <div class="no-print-container no-print">
+        <h1>Bicycle Hangtag Generator (4" x 6")</h1>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="input-brand">Bicycle Brand</label>
+                <input type="text" id="input-brand" placeholder="e.g., Giant" autocomplete="off">
+            </div>
+            <div class="form-group">
+                <label for="input-model">Model Name</label>
+                <input type="text" id="input-model" placeholder="e.g., Revolt" autocomplete="off">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="size-type">Sizing Metric</label>
+                <select id="size-type" onchange="updateSizeDropdown()">
+                    <option value="standard">Standard (XS - XL)</option>
+                    <option value="cm">Centimeter (cm)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="input-size">Frame Size</label>
+                <select id="input-size">
+                    <!-- Loaded dynamically via JS -->
+                </select>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="input-price">Retail Price ($)</label>
+                <input type="number" id="input-price" placeholder="e.g., 1450" autocomplete="off">
+            </div>
+        </div>
+
+        <button onclick="generateBikeLabel()">Generate & Print Tag</button>
+    </div>
+
+    <div class="preview-heading no-print" id="preview-title" style="display: none;">Label Print Preview</div>
+    
+    <!-- Container for Generated Layout Output -->
+    <div id="label-preview-container"></div>
+
+    <script>
+        const standardSizes = ["XS", "S", "M", "M/L", "L", "XL", "XXL"];
+        const cmSizes = ["47cm", "49cm", "52cm", "54cm", "56cm", "58cm", "61cm", "63cm"];
+
+        // Size expansion data map
+        const sizeExpansionMap = {
+            "XS": "X-Small",
+            "S": "Small",
+            "M": "Medium",
+            "M/L": "Medium / Large",
+            "L": "Large",
+            "XL": "X-Large",
+            "XXL": "XX-Large"
+        };
+
+        function updateSizeDropdown() {
+            const type = document.getElementById('size-type').value;
+            const sizeSelect = document.getElementById('input-size');
+            sizeSelect.innerHTML = '';
+            
+            const targetedArray = (type === 'standard') ? standardSizes : cmSizes;
+            targetedArray.forEach(size => {
+                const opt = document.createElement('option');
+                opt.value = size;
+                opt.innerHTML = size;
+                sizeSelect.appendChild(opt);
+            });
+        }
+
+        window.onload = function() {
+            updateSizeDropdown();
+        };
+
+        // Automatic Text Fitting Shrink Calculation Engine
+        function applyShrinkToFit(elementId, targetMaxPt) {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+            let fontSize = targetMaxPt;
+            el.style.fontSize = fontSize + 'pt';
+
+            while (el.scrollWidth > el.clientWidth && fontSize > 12) {
+                fontSize -= 1;
+                el.style.fontSize = fontSize + 'pt';
+            }
+        }
+
+        function generateBikeLabel() {
+            const brand = document.getElementById('input-brand').value.trim();
+            const model = document.getElementById('input-model').value.trim();
+            const selectedSizeCode = document.getElementById('input-size').value;
+            let price = document.getElementById('input-price').value.trim();
+
+            if (!brand || !model || !price) {
+                alert("Please complete Brand, Model, and Price fields before printing.");
+                return;
+            }
+
+            // Expand shortcode inputs to clean full-text strings
+            const printableSizeText = sizeExpansionMap[selectedSizeCode] || selectedSizeCode;
+
+            price = parseFloat(price).toLocaleString('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                maximumFractionDigits: 0,
+                minimumFractionDigits: 0
+            });
+
+            const container = document.getElementById('label-preview-container');
+            container.innerHTML = ''; 
+            
+            const labelDiv = document.createElement('div');
+            labelDiv.className = 'dymo-4x6';
+            
+            labelDiv.innerHTML = `
+                <div class="logo-wrapper">
+                    <img id="shop-logo-img" src="https://i.postimg.cc/hj7x8STM/CNB-final-logo-no-tagline.jpg" class="shop-logo" alt="Cyclical Nature Bicycles Logo">
+                </div>
+                <div class="top-divider"></div>
+                <div class="product-info-cluster">
+                    <div id="txt-brand" class="text-line bike-brand">${brand}</div>
+                    <div id="txt-model" class="text-line bike-model">${model}</div>
+                    <div id="txt-size" class="text-line bike-size">${printableSizeText}</div>
+                </div>
+                <div class="bottom-divider"></div>
+                <div id="txt-price" class="text-line price-display">${price}</div>
+            `;
+            
+            container.appendChild(labelDiv);
+            document.getElementById('preview-title').style.display = 'block';
+
+            // Fit strings to edge boundaries to utilize optimal tag real estate
+            applyShrinkToFit('txt-brand', 68); 
+            applyShrinkToFit('txt-model', 44); 
+            applyShrinkToFit('txt-size', 38);  
+            applyShrinkToFit('txt-price', 85); 
+
+            // Handle delayed print dialog for asset loading verification
+            const logoImg = document.getElementById('shop-logo-img');
+            const triggerPrint = () => {
+                setTimeout(() => {
+                    window.print();
+                }, 400); 
+            };
+
+            if (logoImg.complete) {
+                triggerPrint();
+            } else {
+                logoImg.onload = triggerPrint;
+                logoImg.onerror = () => {
+                    console.error("The shop logo image source failed to load.");
+                    triggerPrint(); 
+                };
+            }
+        }
+    </script>
+</body>
+</html>
