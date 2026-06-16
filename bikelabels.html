@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cyclical Nature Bicycles - Bike Label Generator</title>
     <style>
-        /* --- Screen UI Canvas Layout --- */
+        /* --- Base Screen Styles --- */
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: #f4f6f8;
@@ -14,7 +14,7 @@
             padding: 0;
         }
 
-        /* --- Navigation Bar --- */
+        /* --- Global Navigation --- */
         .main-header {
             background-color: #ffffff;
             padding: 15px 40px;
@@ -28,7 +28,6 @@
             font-weight: 700;
             font-size: 1.1rem;
             color: #111;
-            letter-spacing: -0.2px;
         }
         .nav-links {
             display: flex;
@@ -50,11 +49,10 @@
         .nav-links a.active {
             color: #0066cc;
             background-color: #e6f2ff;
-            cursor: default;
         }
 
-        /* --- Input Control Panel Container --- */
-        .no-print-container {
+        /* --- UI Control Panel --- */
+        .control-panel {
             max-width: 600px;
             margin: 0 auto 30px auto;
             background: #ffffff;
@@ -106,9 +104,22 @@
             transition: background 0.2s;
             margin-top: 10px;
         }
-        button:hover {
-            background-color: #0052a3;
+        button:hover { background-color: #0052a3; }
+        
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            margin-bottom: 2px;
         }
+        .checkbox-subtext {
+            font-size: 0.72rem;
+            color: #666;
+            padding-left: 24px;
+            font-weight: 500;
+        }
+
         .preview-heading {
             max-width: 4in;
             margin: 0 auto 10px auto;
@@ -116,60 +127,56 @@
             text-transform: uppercase;
             font-size: 0.85rem;
             color: #666;
+            text-align: center;
         }
 
-        /* --- Precise 4x6 Label Grid Layout --- */
-        #label-preview-container {
+        /* --- 4x6 Label Canvas (Screen View) --- */
+        #preview-container {
             display: flex;
             flex-direction: column;
             align-items: center;
             padding-bottom: 60px;
+            gap: 20px; /* Space between the two pages on screen */
         }
-        .dymo-4x6 {
+        
+        .label-page {
             background: white;
             box-sizing: border-box;
             width: 4in;
             height: 6in;
             padding: 0.3in 0.2in;
-            border: 1px dashed #999; /* Visual frame guide for desktop view */
+            border: 1px dashed #999;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             align-items: center;
             text-align: center;
             overflow: hidden;
-            position: relative; /* Setup anchor point for isolated bottom tagline text */
+            position: relative;
         }
         
-        .logo-wrapper {
+        .logo-box {
             width: 100%;
             height: 1.3in;
             display: flex;
             justify-content: center;
             align-items: center;
         }
-        .shop-logo {
+        .logo-box img {
             width: 100%;
             height: 100%;
             object-fit: contain;
         }
 
-        /* Geometric divider spacing configurations */
-        .top-divider {
+        .divider {
             width: 100%;
             border-top: 3px solid #000000;
-            margin-top: 0.15in;
-            margin-bottom: 0.02in;
+            margin: 0.05in 0;
         }
+        .divider.top { margin-top: 0.15in; margin-bottom: 0.02in; }
+        .divider.bottom { margin-top: 0.02in; margin-bottom: 0.15in; }
         
-        .bottom-divider {
-            width: 100%;
-            border-top: 3px solid #000000;
-            margin-top: 0.02in;
-            margin-bottom: 0.15in;
-        }
-        
-        .product-info-cluster {
+        .center-content {
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -179,7 +186,7 @@
             overflow: hidden;
         }
 
-        .text-line {
+        .shrink-text {
             display: block;
             width: 100%;
             white-space: nowrap;
@@ -188,36 +195,12 @@
             line-height: 1.1;
         }
 
-        .bike-brand {
-            font-weight: 900;
-            text-transform: uppercase;
-            color: #000000;
-        }
+        .t-brand { font-weight: 900; text-transform: uppercase; color: #000; }
+        .t-model { font-weight: 500; color: #111; margin-top: 2px; letter-spacing: -0.5px; }
+        .t-size  { font-weight: 900; color: #000; text-transform: uppercase; margin-top: 4px; }
+        .t-price { font-weight: 900; color: #000; width: 100%; line-height: 1; padding-top: 4px; }
 
-        .bike-model {
-            font-weight: 500;
-            color: #111111;
-            margin-top: 2px;
-            letter-spacing: -0.5px;
-        }
-
-        .bike-size {
-            font-weight: 900;
-            color: #000000;
-            text-transform: uppercase;
-            margin-top: 4px;
-        }
-
-        .price-display {
-            font-weight: 900;
-            color: #000000;
-            width: 100%;
-            line-height: 1;
-            padding-top: 4px;
-        }
-
-        /* Balanced tagline typography sizing definition */
-        .bike-kickstand {
+        .kickstand-notice {
             position: absolute;
             bottom: 0.08in;
             left: 0;
@@ -225,54 +208,47 @@
             font-size: 8pt;
             font-weight: 700;
             letter-spacing: 0.2px;
-            color: #444444;
+            color: #444;
             text-transform: uppercase;
             text-align: center;
         }
 
-        /* --- Absolute Print Mode Rules (Zero-Margin Lock) --- */
+        /* --- Strict Print Hardware Overrides --- */
         @media print {
             html, body {
                 margin: 0 !important;
                 padding: 0 !important;
-                width: 4in !important;
-                height: 6in !important;
-                overflow: hidden !important;
                 background: #ffffff;
+                width: 4in !important;
             }
-            .no-print, .main-header, .no-print-container, .preview-heading {
-                display: none !important;
-            }
-            #label-preview-container {
+            .no-print { display: none !important; }
+            
+            #preview-container {
+                gap: 0 !important;
                 margin: 0 !important;
                 padding: 0 !important;
-                width: 4in !important;
-                height: 6in !important;
-                overflow: hidden !important;
                 display: block !important;
             }
-            .dymo-4x6 {
+            
+            .label-page {
                 border: none !important;
                 margin: 0 !important;
-                padding: 0.3in 0.2in !important;
                 width: 4in !important;
                 height: 6in !important;
-                box-sizing: border-box !important;
-                overflow: hidden !important;
-                position: relative !important;
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
             }
-            @page {
-                size: 4in 6in;
-                margin: 0 !important;
-            }
+            
+            /* The critical code for perfect 2-page runs */
+            .label-page:first-child { page-break-after: always !important; }
+            .label-page:last-child { page-break-after: auto !important; }
+            
+            @page { size: 4in 6in; margin: 0 !important; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Main Navigation Header Bar -->
     <header class="main-header no-print">
         <div class="brand-title">Cyclical Nature Bicycles</div>
         <nav class="nav-links">
@@ -281,188 +257,170 @@
         </nav>
     </header>
 
-    <!-- Configuration Input Panel -->
-    <div class="no-print-container no-print">
-        <h1>Bicycle Hangtag Generator (4" x 6")</h1>
+    <div class="control-panel no-print">
+        <h1>Bicycle Hangtag Generator (Double-Sided)</h1>
         
         <div class="form-row">
             <div class="form-group">
-                <label for="input-brand">Bicycle Brand</label>
-                <input type="text" id="input-brand" placeholder="e.g., Giant" autocomplete="off">
+                <label>Bicycle Brand</label>
+                <input type="text" id="val-brand" placeholder="e.g., Giant" autocomplete="off">
             </div>
             <div class="form-group">
-                <label for="input-model">Model Name</label>
-                <input type="text" id="input-model" placeholder="e.g., Revolt" autocomplete="off">
-            </div>
-        </div>
-
-        <div class="form-row">
-            <div class="form-group">
-                <label for="size-type">Sizing Metric</label>
-                <select id="size-type" onchange="updateSizeDropdown()">
-                <option value="standard">Standard (XS - XL)</option>
-                <option value="cm">Centimeter (cm)</option>
-                <option value="kids">Kids Bikes (inches)</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="input-size">Frame Size</label>
-                <select id="input-size">
-                    <!-- Loaded dynamically via JS -->
-                </select>
+                <label>Model Name</label>
+                <input type="text" id="val-model" placeholder="e.g., Revolt" autocomplete="off">
             </div>
         </div>
 
         <div class="form-row">
             <div class="form-group">
-                <label for="input-price">Retail Price ($)</label>
-                <input type="number" id="input-price" placeholder="e.g., 1450" autocomplete="off">
+                <label>Sizing Metric</label>
+                <select id="val-type" onchange="buildSizeDropdown()">
+                    <option value="standard">Standard (XS - XL)</option>
+                    <option value="cm">Centimeter (cm)</option>
+                    <option value="kids">Kids Bikes (inches)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Frame Size</label>
+                <select id="val-size"></select>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Retail Price ($)</label>
+                <input type="number" id="val-price" placeholder="e.g., 1450" autocomplete="off">
             </div>
             <div class="form-group" style="justify-content: center; padding-top: 15px;">
-                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin-bottom: 2px;">
-                    <!-- Defaults to unchecked state -->
-                    <input type="checkbox" id="chk-kickstand" style="width: auto; transform: scale(1.1); margin: 0; cursor: pointer;">
+                <label class="checkbox-container">
+                    <input type="checkbox" id="val-kickstand" style="transform: scale(1.1); margin: 0;">
                     <span style="font-weight: 600; font-size: 0.9rem;">Kickstand?</span>
                 </label>
-                <span style="font-size: 0.72rem; color: #666; padding-left: 24px; font-weight: 500;">Check to remove tagline</span>
+                <span class="checkbox-subtext">Check to remove tagline</span>
             </div>
         </div>
 
-        <button onclick="generateBikeLabel()">Generate & Print Tag</button>
+        <button onclick="executePrintJob()">Generate & Print Tag (2 Pages)</button>
     </div>
 
-    <div class="preview-heading no-print" id="preview-title" style="display: none;">Label Print Preview</div>
+    <div class="preview-heading no-print" id="ui-title" style="display: none;">Label Preview (Front & Back)</div>
     
-    <!-- Container for Generated Layout Output -->
-    <div id="label-preview-container"></div>
+    <div id="preview-container"></div>
 
     <script>
-        const standardSizes = ["", "XS", "S", "S/M", "M", "M/L", "L", "XL", "XXL"];
-        const cmSizes = ["", "47cm", "48cm", "49cm", "50cm", "52cm", "53cm", "54cm", "55cm", "56cm", "58cm", "61cm"];
-        const kidsSizes = ["", "12\"", "14\"", "16\"", "18\"", "20\"", "24\""];
+        // Core Databases
+        const dbStandard = ["", "XS", "S", "S/M", "M", "M/L", "L", "XL", "XXL"];
+        const dbCm = ["", "47cm", "48cm", "49cm", "50cm", "52cm", "53cm", "54cm", "55cm", "56cm", "58cm", "61cm"];
+        const dbKids = ["", "12\"", "14\"", "16\"", "18\"", "20\"", "24\""];
 
-        // Size expansion descriptive map dictionary
-       const sizeExpansionMap = {
-    "XS": "X-Small",
-    "S": "Small",
-    "S/M": "Small / Medium",
-    "M": "Medium",
-    "M/L": "Medium / Large",
-    "L": "Large",
-    "XL": "X-Large",
-    "XXL": "XX-Large"
-};
+        const sizeDictionary = {
+            "XS": "X-Small",
+            "S": "Small",
+            "S/M": "Small / Medium",
+            "M": "Medium",
+            "M/L": "Medium / Large",
+            "L": "Large",
+            "XL": "X-Large",
+            "XXL": "XX-Large"
+        };
 
-        function updateSizeDropdown() {
-            const type = document.getElementById('size-type').value;
-            const sizeSelect = document.getElementById('input-size');
-            sizeSelect.innerHTML = '';
+        function buildSizeDropdown() {
+            const type = document.getElementById('val-type').value;
+            const selectEl = document.getElementById('val-size');
+            selectEl.innerHTML = '';
             
-            let targetedArray;
-if (type === 'standard') {
-    targetedArray = standardSizes;
-} else if (type === 'cm') {
-    targetedArray = cmSizes;
-} else if (type === 'kids') {
-    targetedArray = kidsSizes;
-}
-            targetedArray.forEach(size => {
-                const opt = document.createElement('option');
-                opt.value = size;
-                opt.innerHTML = size === "" ? "-- Blank / None --" : size;
-                sizeSelect.appendChild(opt);
+            let targetDb = dbStandard;
+            if (type === 'cm') targetDb = dbCm;
+            if (type === 'kids') targetDb = dbKids;
+
+            targetDb.forEach(size => {
+                const option = document.createElement('option');
+                option.value = size;
+                option.innerHTML = size === "" ? "-- Blank / None --" : size;
+                selectEl.appendChild(option);
             });
         }
 
-        window.onload = function() {
-            updateSizeDropdown();
-        };
+        window.onload = buildSizeDropdown;
 
-        // Automatic Text Fitting Shrink Calculation Engine
-        function applyShrinkToFit(elementId, targetMaxPt) {
-            const el = document.getElementById(elementId);
-            if (!el) return;
-            let fontSize = targetMaxPt;
-            el.style.fontSize = fontSize + 'pt';
-
-            while (el.scrollWidth > el.clientWidth && fontSize > 12) {
-                fontSize -= 1;
-                el.style.fontSize = fontSize + 'pt';
+        // Rock-solid auto-scaler targeting specific DOM nodes
+        function scaleNodeToFit(node, maxPt) {
+            let currentPt = maxPt;
+            node.style.fontSize = currentPt + 'pt';
+            while (node.scrollWidth > node.clientWidth && currentPt > 12) {
+                currentPt -= 1;
+                node.style.fontSize = currentPt + 'pt';
             }
         }
 
-        function generateBikeLabel() {
-            const brand = document.getElementById('input-brand').value.trim();
-            const model = document.getElementById('input-model').value.trim();
-            const selectedSizeCode = document.getElementById('input-size').value;
-            const kickstandChecked = document.getElementById('chk-kickstand').checked;
-            let price = document.getElementById('input-price').value.trim();
+        function executePrintJob() {
+            const bBrand = document.getElementById('val-brand').value.trim();
+            const bModel = document.getElementById('val-model').value.trim();
+            const bSizeRaw = document.getElementById('val-size').value;
+            const isKickstandChecked = document.getElementById('val-kickstand').checked;
+            let bPrice = document.getElementById('val-price').value.trim();
 
-            if (!brand || !model || !price) {
-                alert("Please complete Brand, Model, and Price fields before printing.");
+            if (!bBrand || !bModel || !bPrice) {
+                alert("Please fill out the Brand, Model, and Price fields.");
                 return;
             }
 
-            // Map shortcode parameters to readable word descriptors if active
-            const printableSizeText = selectedSizeCode ? (sizeExpansionMap[selectedSizeCode] || selectedSizeCode) : "";
+            // Formatting
+            const bSizeDisplay = bSizeRaw ? (sizeDictionary[bSizeRaw] || bSizeRaw) : "";
+            bPrice = parseFloat(bPrice).toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
 
-            price = parseFloat(price).toLocaleString('en-US', {
-                style: 'currency',
-                currency: 'USD',
-                maximumFractionDigits: 0,
-                minimumFractionDigits: 0
-            });
-
-            const container = document.getElementById('label-preview-container');
+            const container = document.getElementById('preview-container');
             container.innerHTML = ''; 
-            
-            const labelDiv = document.createElement('div');
-            labelDiv.className = 'dymo-4x6';
-            
-            // Inverted layout template injection logic: runs tagline if the box is UNCHECKED
-            labelDiv.innerHTML = `
-                <div class="logo-wrapper">
-                    <img id="shop-logo-img" src="https://i.postimg.cc/hj7x8STM/CNB-final-logo-no-tagline.jpg" class="shop-logo" alt="Cyclical Nature Bicycles Logo">
-                </div>
-                <div class="top-divider"></div>
-                <div class="product-info-cluster">
-                    <div id="txt-brand" class="text-line bike-brand">${brand}</div>
-                    <div id="txt-model" class="text-line bike-model">${model}</div>
-                    ${printableSizeText ? `<div id="txt-size" class="text-line bike-size">${printableSizeText}</div>` : ''}
-                </div>
-                <div class="bottom-divider"></div>
-                <div id="txt-price" class="text-line price-display">${price}</div>
-                ${!kickstandChecked ? `<div class="bike-kickstand">Kickstand available for extra charge.</div>` : ''}
-            `;
-            
-            container.appendChild(labelDiv);
-            document.getElementById('preview-title').style.display = 'block';
 
-            // Scale rules sequentially targeting boundaries safely
-            applyShrinkToFit('txt-brand', 68); 
-            applyShrinkToFit('txt-model', 44); 
-            if (printableSizeText) {
-                applyShrinkToFit('txt-size', 38);  
+            // Create identical labels for page 1 and page 2
+            for (let i = 0; i < 2; i++) {
+                const page = document.createElement('div');
+                page.className = 'label-page';
+                
+                page.innerHTML = `
+                    <div class="logo-box">
+                        <img class="logo-tracker" src="https://i.postimg.cc/hj7x8STM/CNB-final-logo-no-tagline.jpg" alt="Logo">
+                    </div>
+                    <div class="divider top"></div>
+                    <div class="center-content">
+                        <div class="shrink-text t-brand">${bBrand}</div>
+                        <div class="shrink-text t-model">${bModel}</div>
+                        ${bSizeDisplay ? `<div class="shrink-text t-size">${bSizeDisplay}</div>` : ''}
+                    </div>
+                    <div class="divider bottom"></div>
+                    <div class="shrink-text t-price">${bPrice}</div>
+                    ${!isKickstandChecked ? `<div class="kickstand-notice">Kickstand available for extra charge.</div>` : ''}
+                `;
+                container.appendChild(page);
             }
-            applyShrinkToFit('txt-price', 85); 
 
-            // Handle print dialog invocation automatically upon asset verification
-            const logoImg = document.getElementById('shop-logo-img');
-            const triggerPrint = () => {
-                setTimeout(() => {
-                    window.print();
-                }, 400); 
-            };
+            document.getElementById('ui-title').style.display = 'block';
 
-            if (logoImg.complete) {
-                triggerPrint();
-            } else {
-                logoImg.onload = triggerPrint;
-                logoImg.onerror = () => {
-                    console.error("The shop logo image source failed to load.");
-                    triggerPrint(); 
+            // Wait a microsecond for the browser to paint the new DOM nodes before measuring them
+            setTimeout(() => {
+                const pages = container.querySelectorAll('.label-page');
+                pages.forEach(page => {
+                    scaleNodeToFit(page.querySelector('.t-brand'), 68);
+                    scaleNodeToFit(page.querySelector('.t-model'), 44);
+                    const sizeNode = page.querySelector('.t-size');
+                    if (sizeNode) scaleNodeToFit(sizeNode, 38);
+                    scaleNodeToFit(page.querySelector('.t-price'), 85);
+                });
+
+                // Check images and fire print
+                const logos = document.querySelectorAll('.logo-tracker');
+                let loadedCount = 0;
+                
+                const tryPrint = () => {
+                    loadedCount++;
+                    if (loadedCount === logos.length) setTimeout(() => window.print(), 100);
                 };
-            }
+
+                logos.forEach(img => {
+                    if (img.complete) tryPrint();
+                    else { img.onload = tryPrint; img.onerror = tryPrint; }
+                });
+            }, 50);
         }
     </script>
 </body>
