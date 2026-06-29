@@ -89,13 +89,14 @@
             margin-bottom: 0;
             cursor: pointer;
         }
-        input[type="text"] {
+        input[type="text"], select {
             padding: 10px;
             font-size: 1rem;
             border: 1px solid #ccc;
             border-radius: 4px;
             box-sizing: border-box;
             width: 100%;
+            background: #fff;
         }
         
         /* Interactive Gray-Out Mechanics */
@@ -134,7 +135,7 @@
             text-align: center;
         }
 
-        /* --- Horizontal 6x4 Label Canvas (Screen View) --- */
+        /* --- Canvas Target Elements (Screen View) --- */
         #preview-container {
             display: flex;
             flex-direction: column;
@@ -145,9 +146,6 @@
         .label-page {
             background: white;
             box-sizing: border-box;
-            width: 6in;
-            height: 4in;
-            padding: 0.25in 0.3in;
             border: 1px dashed #999;
             display: flex;
             flex-direction: column;
@@ -155,29 +153,28 @@
             overflow: hidden;
         }
 
-        /* --- Header Layout Row --- */
-        .label-header {
+        /* --- MODIFIER TYPE 1: Original 4x6 Configuration --- */
+        .label-page.size-4x6 {
+            width: 6in;
+            height: 4in;
+            padding: 0.25in 0.3in;
+        }
+        .size-4x6 .label-header {
             display: flex;
             justify-content: space-between;
             align-items: flex-end;
             width: 100%;
             height: 0.8in;
-            margin-bottom: 0.12in; /* Generous visual breathing room above line */
+            margin-bottom: 0.12in; 
         }
-        .logo-box {
+        .size-4x6 .logo-box {
             height: 100%;
             width: 2.2in;
             display: flex;
             align-items: flex-end;
             justify-content: flex-start;
         }
-        .logo-box img {
-            width: 100%;
-            height: auto;
-            max-height: 100%;
-            object-fit: contain;
-        }
-        .header-title {
+        .size-4x6 .header-title {
             font-size: 26pt;
             font-weight: bold;
             font-style: italic;
@@ -186,14 +183,61 @@
             color: #000;
             line-height: 1;
         }
-
-        .solid-divider {
+        .size-4x6 .solid-divider {
             width: 100%;
             border-top: 4px solid #000000;
             margin: 0;
         }
+        .size-4x6 .bottom-checklist {
+            display: flex;
+            gap: 0.4in;
+            width: 100%;
+            justify-content: flex-start;
+            align-items: center;
+            padding-bottom: 0.05in;
+        }
 
-        /* --- Center Core Identity Cluster --- */
+        /* --- MODIFIER TYPE 2: New 30336 Small Configuration --- */
+        .label-page.size-30336 {
+            width: 2.125in;
+            height: 1in;
+            padding: 0.05in 0.08in;
+        }
+        .size-30336 .label-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            height: 0.22in;
+            margin-bottom: 0.02in;
+        }
+        .size-30336 .logo-box {
+            height: 100%;
+            width: 0.85in;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+        }
+        .size-30336 .header-title {
+            font-size: 9.5pt;
+            font-weight: bold;
+            font-style: italic;
+            text-transform: uppercase;
+            letter-spacing: -0.2px;
+            color: #000;
+            line-height: 1;
+        }
+        .size-30336 .solid-divider {
+            width: 100%;
+            border-top: 1.5px solid #000000;
+            margin: 0;
+        }
+        /* Completely strips checklist constraints on 30336 asset models */
+        .size-30336 .bottom-checklist {
+            display: none !important;
+        }
+
+        /* --- Unified Center Core Identity Cluster --- */
         .center-content {
             display: flex;
             flex-direction: column;
@@ -202,7 +246,7 @@
             flex-grow: 1;
             width: 100%;
             overflow: hidden;
-            padding: 0.1in 0;
+            padding: 0.05in 0;
         }
         .shrink-text {
             display: block;
@@ -224,15 +268,13 @@
             margin-top: 4px;
         }
 
-        /* --- Bottom Verification Checklist Grid --- */
-        .bottom-checklist {
-            display: flex;
-            gap: 0.4in;
+        .logo-box img {
             width: 100%;
-            justify-content: flex-start;
-            align-items: center;
-            padding-bottom: 0.05in;
+            height: auto;
+            max-height: 100%;
+            object-fit: contain;
         }
+
         .check-item {
             display: flex;
             align-items: center;
@@ -255,8 +297,6 @@
                 margin: 0 !important;
                 padding: 0 !important;
                 background: #ffffff;
-                width: 6in !important;
-                height: 4in !important;
             }
             .no-print { display: none !important; }
             
@@ -269,19 +309,14 @@
             .label-page {
                 border: none !important;
                 margin: 0 !important;
-                width: 6in !important;
-                height: 4in !important;
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
                 page-break-after: avoid !important;
             }
-            
-            @page { 
-                size: 6in 4in; 
-                margin: 0 !important; 
-            }
         }
     </style>
+    <!-- Dynamic Style Block to Inject Absolute Print Size Settings Without Hardcoding Layout Conflicts -->
+    <style id="dynamic-print-media"></style>
 </head>
 <body>
 
@@ -296,6 +331,14 @@
 
     <div class="control-panel no-print">
         <h1>Special Order Ticket Generator</h1>
+
+        <div class="form-group">
+            <label for="val-size">Label Dimensions</label>
+            <select id="val-size">
+                <option value="size-30336">30336 Small Multi-Purpose</option>
+                <option value="size-4x6">4 x 6</option>
+            </select>
+        </div>
         
         <div class="form-group">
             <label for="val-name">Customer Name</label>
@@ -337,8 +380,8 @@
         function scaleNodeToFit(node, maxPt) {
             let currentPt = maxPt;
             node.style.fontSize = currentPt + 'pt';
-            while (node.scrollWidth > node.clientWidth && currentPt > 12) {
-                currentPt -= 1;
+            while (node.scrollWidth > node.clientWidth && currentPt > 6) {
+                currentPt -= 0.5;
                 node.style.fontSize = currentPt + 'pt';
             }
         }
@@ -347,6 +390,7 @@
             const customerName = document.getElementById('val-name').value.trim();
             const includeProduct = document.getElementById('chk-toggle-product').checked;
             const productName = document.getElementById('val-product').value.trim();
+            const chosenSize = document.getElementById('val-size').value;
 
             if (!customerName) {
                 alert("Please supply a Customer Name value before running print jobs.");
@@ -357,11 +401,19 @@
                 return;
             }
 
+            // Target print profile size changes dynamically
+            const printRuleContainer = document.getElementById('dynamic-print-media');
+            if (chosenSize === 'size-30336') {
+                printRuleContainer.innerHTML = `@media print { @page { size: 2.125in 1in; margin: 0 !important; } html, body { width: 2.125in !important; height: 1in !important; } .label-page { width: 2.125in !important; height: 1in !important; } }`;
+            } else {
+                printRuleContainer.innerHTML = `@media print { @page { size: 6in 4in; margin: 0 !important; } html, body { width: 6in !important; height: 4in !important; } .label-page { width: 6in !important; height: 4in !important; } }`;
+            }
+
             const container = document.getElementById('preview-container');
             container.innerHTML = ''; // Safely drop previous execution iterations
 
             const labelPage = document.createElement('div');
-            labelPage.className = 'label-page';
+            labelPage.className = `label-page ${chosenSize}`;
             
             labelPage.innerHTML = `
                 <div class="label-header">
@@ -386,10 +438,16 @@
 
             // Wait brief processing frame to calculate dynamic node overflow thresholds accurately
             setTimeout(() => {
-                scaleNodeToFit(labelPage.querySelector('.t-name'), 54);
-                
-                if (includeProduct) {
-                    scaleNodeToFit(labelPage.querySelector('.t-product'), 24);
+                if (chosenSize === 'size-30336') {
+                    scaleNodeToFit(labelPage.querySelector('.t-name'), 16);
+                    if (includeProduct) {
+                        scaleNodeToFit(labelPage.querySelector('.t-product'), 10);
+                    }
+                } else {
+                    scaleNodeToFit(labelPage.querySelector('.t-name'), 54);
+                    if (includeProduct) {
+                        scaleNodeToFit(labelPage.querySelector('.t-product'), 24);
+                    }
                 }
 
                 // Cache routing gate verification to run printing automation natively
