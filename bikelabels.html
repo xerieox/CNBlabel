@@ -419,6 +419,30 @@
             
             @page { size: 4in 6in; margin: 0 !important; }
         }
+
+        /* --- Friendly Note Reminder Box --- */
+.friendly-note-box {
+    max-width: 600px;
+    margin: 0 auto 20px auto; /* Centered layout matching the control panel */
+    background-color: #fffbeb; /* Warm soft yellow background */
+    border-left: 4px solid #d97706; /* Amber border accent line */
+    padding: 15px 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.04);
+    box-sizing: border-box;
+}
+.note-content {
+    font-size: 0.92rem;
+    line-height: 1.5;
+    color: #78350f; /* Deep matching text color */
+}
+.note-signature {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #b45309;
+    margin-top: 6px;
+    text-align: right;
+}
     </style>
 </head>
 <body>
@@ -515,7 +539,14 @@
     <div class="preview-heading no-print" id="ui-title" style="display: none;">Label Preview Workspace</div>
     
     <div id="preview-container"></div>
-
+  <!-- DELETE IF CAUSING PROBLEMS -->
+    <div class="friendly-note-box no-print">
+    <div class="note-content">
+        <strong>Note:</strong> If you're making an e-bike tag, make sure to add an accessory box tag for it's charger and manual :)
+    </div>
+    <div class="note-signature">- Grayson</div>
+</div>
+<!-- DELETE IF CAUSING PROBLEMS ^^ -->
     <script>
         // Sizing Database Schemas
         const dbStandard = ["", "XS", "S", "S/M", "M", "M/L", "L", "XL", "XXL", "R"];
