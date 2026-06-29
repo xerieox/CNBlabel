@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyclical Nature Bicycles - Bike Label Generator</title>
+    <!-- JsBarcode CDN library for rendering high-precision Code 128 Auto barcodes natively -->
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <style>
+        /* --- Base Screen Styles --- */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f6f8;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* --- Global Navigation --- */
+        .main-header {
+            background-color: #ffffff;
+            padding: 15px 40px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+        .brand-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #111;
+        }
+        .nav-links {
+            display: flex;
+            gap: 15px;
+        }
+        .nav-links a {
+            text-decoration: none;
+            color: #555;
+            font-weight: 600;
+            font-size: 0.95rem;
+            padding: 8px 16px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+        .nav-links a:hover {
+            color: #0066cc;
+            background-color: #f0f7ff;
+        }
+        .nav-links a.active {
+            color: #0066cc;
+            background-color: #e6f2ff;
+        }
+
+        /* --- UI Control Panel --- */
+        .control-panel {
+            max-width: 600px;
+            margin: 0 auto 30px auto;
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        h1 {
+            font-size: 1.3rem;
+            margin-top: 0;
+            color: #111;
+            border-bottom: 2px solid #eaeaea;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .form-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .form-group {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            font-weight: 600;
+            margin-bottom: 6px;
+            font-size: 0.9rem;
+        }
+        input[type="text"], input[type="number"], select {
+            padding: 10px;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            width: 100%;
+        }
+        button {
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.2s;
+            margin-top: 10px;
+        }
+        button:hover { background-color: #0052a3; }
+        
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            margin-bottom: 2px;
+        }
+        .checkbox-subtext {
+            font-size: 0.72rem;
+            color: #666;
+            padding-left: 24px;
+            font-weight: 500;
+        }
+
+        /* --- Accessory Box Fields Section --- */
+        .accessory-section {
+            border-top: 2px dashed #e2e8f0;
+            margin-top: 20px;
+            padding-top: 15px;
+        }
+        .accessory-fields {
+            display: none;
+            margin-top: 15px;
+        }
+
+        .preview-heading {
+            max-width: 4in;
+            margin: 0 auto 10px auto;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            color: #666;
+            text-align: center;
+        }
+
+        /* --- 4x6 Label Canvas (Screen View Layout) --- */
+        #preview-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-bottom: 60px;
+            gap: 20px; 
+        }
+        
+        .label-page {
+            background: white;
+            box-sizing: border-box;
+            width: 4in;
+            height: 6in;
+            padding: 0.3in 0.2in;
+            border: 1px dashed #999;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            text-align: center;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .logo-box {
+            width: 100%;
+            height: 1.3in;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .logo-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .divider {
+            width: 100%;
+            border-top: 3px solid #000000;
+            margin: 0.05in 0;
+        }
+        .divider.top { margin-top: 0.15in; margin-bottom: 0.02in; }
+        .divider.bottom { margin-top: 0.02in; margin-bottom: 0.15in; }
+        
+        .center-content {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            flex-grow: 1;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .shrink-text {
+            display: block;
+            width: 100%;
+            white-space: nowrap;
+            overflow: hidden;
+            box-sizing: border-box;
+            line-height: 1.1;
+        }
+
+        .t-brand { font-weight: 900; text-transform: uppercase; color: #000; }
+        .t-model { font-weight: 500; color: #111; margin-top: 2px; letter-spacing: -0.5px; }
+        .t-size  { font-weight: 900; color: #000; text-transform: uppercase; margin-top: 4px; }
+        .t-price { font-weight: 900; color: #000; width: 100%; line-height: 1; padding-top: 4px; }
+
+        .kickstand-notice {
+            position: absolute;
+            bottom: 0.08in;
+            left: 0;
+            width: 100%;
+            font-size: 8pt;
+            font-weight: 700;
+            letter-spacing: 0.2px;
+            color: #444;
+            text-transform: uppercase;
+            text-align: center;
+        }
+
+        /* --- Isolated Horizontal 6x4 Rotated Box Tag Layout --- */
+        .box-tag-wrapper {
+            position: relative;
+            overflow: hidden;
+            background: #ffffff !important;
+        }
+        .box-tag-inner {
+            width: 6in;
+            height: 4in;
+            box-sizing: border-box;
+            padding: 0.15in 0.25in 0.25in 0.25in;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: absolute;
+            top: 0;
+            left: 0;
+            transform: translate(4in, 0) rotate(90deg);
+            transform-origin: top left;
+            background: #ffffff;
+        }
+
+        .box-header {
+            display: flex;
+            width: 100%;
+            height: 1.15in;
+            border-bottom: 6px solid #000000;
+            box-sizing: border-box;
+        }
+        .box-logo-box {
+            width: 2.2in;
+            height: 100%;
+            border-right: 5px solid #000000;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            padding-bottom: 0.1in;
+        }
+        .box-logo-box img {
+            width: 100%;
+            height: auto;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        .box-header-title-box {
+            flex-grow: 1;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            box-sizing: border-box;
+            padding-bottom: 0.1in;
+            padding-left: 0.05in;
+        }
+        .box-title-line-1, .box-title-line-2 {
+            font-size: 20pt;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.2px;
+            color: #000;
+            line-height: 1.25;
+            white-space: nowrap;
+        }
+
+        .box-body {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            width: 100%;
+            box-sizing: border-box;
+            justify-content: space-between;
+            padding-top: 0.15in;
+            text-align: left;
+        }
+        .box-identity-row {
+            display: block;
+            width: 100%;
+            overflow: hidden;
+            white-space: nowrap;
+            line-height: 1.0;
+        }
+        .box-t-brand {
+            font-weight: 900;
+            text-transform: uppercase;
+            color: #000;
+            margin-right: 15px;
+        }
+        .box-t-model {
+            font-weight: 400;
+            color: #000;
+        }
+
+        .box-specs-row {
+            display: flex;
+            width: 100%;
+            gap: 0.5in;
+            margin-top: 0.05in;
+        }
+        .box-spec-item {
+            font-size: 18pt;
+            color: #000;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+        .box-spec-label {
+            font-weight: 400;
+            letter-spacing: 0.5px;
+        }
+        .box-spec-value {
+            font-weight: 800;
+        }
+
+        .box-footer-tracking-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            width: 100%;
+            height: 1.2in;
+            box-sizing: border-box;
+        }
+        .box-serial-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            width: 52%;
+            overflow: hidden;
+        }
+        .box-serial-header-text {
+            font-size: 14pt;
+            font-weight: 400;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
+        }
+        .box-t-serial-wrapper {
+            display: block;
+            width: 100%;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+        .box-t-serial {
+            font-weight: 800;
+            text-transform: uppercase;
+            line-height: 1.0;
+        }
+        .box-barcode-container {
+            display: flex;
+            justify-content: flex-end;
+            align-items: flex-end;
+            width: 46%;
+            height: 100%;
+            overflow: hidden;
+        }
+        .box-barcode-canvas {
+            max-height: 1.15in;
+            width: 100%;
+        }
+
+        /* --- Absolute Print Overrides --- */
+        @media print {
+            html, body {
+                margin: 0 !important;
+                padding: 0 !important;
+                background: #ffffff;
+                width: 4in !important;
+            }
+            .no-print { display: none !important; }
+            
+            #preview-container {
+                gap: 0 !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                display: block !important;
+            }
+            
+            .label-page {
+                border: none !important;
+                margin: 0 !important;
+                width: 4in !important;
+                height: 6in !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                page-break-after: always !important;
+            }
+            
+            .label-page:last-child { 
+                page-break-after: avoid !important; 
+            }
+            
+            @page { size: 4in 6in; margin: 0 !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="main-header no-print">
+        <div class="brand-title">Cyclical Nature Bicycles</div>
+        <nav class="nav-links">
+            <a href="index.html">Cash Labels</a>
+            <a href="bikelabels.html" class="active">Bike Labels</a>
+            <a href="specialorders.html">Special Orders</a>
+        </nav>
+    </header>
+
+    <div class="control-panel no-print">
+        <h1>Bicycle Hangtag Generator (Double-Sided)</h1>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label>Bicycle Brand</label>
+                <input type="text" id="val-brand" placeholder="e.g., Giant" autocomplete="off">
+            </div>
+            <div class="form-group">
+                <label>Model Name</label>
+                <input type="text" id="val-model" placeholder="e.g., Revolt" autocomplete="off">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Sizing Metric</label>
+                <select id="val-type" onchange="buildSizeDropdown()">
+                    <option value="standard">Standard (XS - XL)</option>
+                    <option value="cm">Centimeter (cm)</option>
+                    <option value="kids">Kids Bikes (inches)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Frame Size</label>
+                <select id="val-size"></select>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Retail Price ($)</label>
+                <input type="number" id="val-price" placeholder="e.g., 1450" autocomplete="off">
+            </div>
+            <div class="form-group" style="justify-content: center; padding-top: 15px;">
+                <label class="checkbox-container">
+                    <input type="checkbox" id="val-kickstand" style="transform: scale(1.1); margin: 0;">
+                    <span style="font-weight: 600; font-size: 0.9rem;">Kickstand?</span>
+                </label>
+                <span class="checkbox-subtext">Check to remove tagline</span>
+            </div>
+        </div>
+
+        <!-- Integrated Accessory Box Tag Trigger Section -->
+        <div class="accessory-section">
+            <label class="checkbox-container">
+                <input type="checkbox" id="val-box-toggle" style="transform: scale(1.1); margin: 0;" onchange="toggleAccessoryFields()">
+                <span style="font-weight: bold; color: #0066cc; font-size: 0.95rem;">Generate Accessory Box Tag?</span>
+            </label>
+            
+            <div class="accessory-fields" id="box-fields-wrap">
+                <div class="form-row">
+                    <div class="form-row" style="width: 100%; margin-bottom: 0;">
+                        <div class="form-group">
+                            <label>Color</label>
+                            <input type="text" id="val-box-color" placeholder="e.g., Dark Green" autocomplete="off">
+                        </div>
+                        <div class="form-group">
+                            <label>Serial Number</label>
+                            <input type="text" id="val-box-serial" placeholder="e.g., 1232500065-I" autocomplete="off">
+                        </div>
+                    </div>
+                </div>
+                <div class="form-row" style="margin-bottom: 5px;">
+                    <div class="form-group">
+                        <label>System ID Barcode (Optional)</label>
+                        <input type="text" id="val-box-systemid" placeholder="e.g., 210000009701" autocomplete="off">
+                    </div>
+                </div>
+
+                <!-- Interactive Lightspeed Help Alert Container -->
+                <div style="margin-top: 15px; padding: 12px; background-color: #eef7ff; border-left: 4px solid #0066cc; border-radius: 4px; font-size: 0.85rem; line-height: 1.4; color: #1c4d7c;">
+                    <strong>💡 How to find System ID:</strong> Go to Lightspeed &rarr; <em>Inventory</em>, then search for your bicycle. Open the specific item profile listing; your System ID code will be listed in <strong>bold directly below the item's main name</strong>.
+                </div>
+            </div>
+        </div>
+
+        <button onclick="executePrintJob()">Generate & Print Tags</button>
+    </div>
+
+    <div class="preview-heading no-print" id="ui-title" style="display: none;">Label Preview Workspace</div>
+    
+    <div id="preview-container"></div>
+
+    <script>
+        // Sizing Database Schemas
+        const dbStandard = ["", "XS", "S", "S/M", "M", "M/L", "L", "XL", "XXL", "R"];
+        const dbCm = ["", "47cm", "48cm", "49cm", "50cm", "51cm", "51.5cm", "52cm", "53cm", "54cm", "54.5cm", "55cm", "56cm", "58cm", "61cm"];
+        const dbKids = ["", "12\"", "14\"", "16\"", "18\"", "20\"", "24\""];
+
+        const sizeDictionary = {
+            "XS": "X-Small",
+            "S": "Small",
+            "S/M": "Small / Medium",
+            "M": "Medium",
+            "M/L": "Medium / Large",
+            "L": "Large",
+            "XL": "X-Large",
+            "XXL": "XX-Large",
+            "R": "Regular"
+        };
+
+        function buildSizeDropdown() {
+            const type = document.getElementById('val-type').value;
+            const selectEl = document.getElementById('val-size');
+            selectEl.innerHTML = '';
+            
+            let targetDb = dbStandard;
+            if (type === 'cm') targetDb = dbCm;
+            if (type === 'kids') targetDb = dbKids;
+
+            targetDb.forEach(size => {
+                const option = document.createElement('option');
+                option.value = size;
+                option.innerHTML = size === "" ? "-- Blank / None --" : size;
+                selectEl.appendChild(option);
+            });
+        }
+
+        function toggleAccessoryFields() {
+            const isChecked = document.getElementById('val-box-toggle').checked;
+            document.getElementById('box-fields-wrap').style.display = isChecked ? 'block' : 'none';
+        }
+
+        window.onload = buildSizeDropdown;
+
+        // Auto-scaler layout engine logic
+        function scaleNodeToFit(node, maxPt) {
+            let currentPt = maxPt;
+            node.style.fontSize = currentPt + 'pt';
+            while (node.scrollWidth > node.clientWidth && currentPt > 10) {
+                currentPt -= 0.5;
+                node.style.fontSize = currentPt + 'pt';
+            }
+        }
+
+        function executePrintJob() {
+            const bBrand = document.getElementById('val-brand').value.trim();
+            const bModel = document.getElementById('val-model').value.trim();
+            const bSizeRaw = document.getElementById('val-size').value;
+            const isKickstandChecked = document.getElementById('val-kickstand').checked;
+            let bPrice = document.getElementById('val-price').value.trim();
+
+            // Accessory Layout Extracted Elements
+            const runBoxTag = document.getElementById('val-box-toggle').checked;
+            const boxColor = document.getElementById('val-box-color').value.trim();
+            const boxSerial = document.getElementById('val-box-serial').value.trim();
+            const boxSystemId = document.getElementById('val-box-systemid').value.trim();
+
+            if (!bBrand || !bModel || !bPrice) {
+                alert("Please fill out the Brand, Model, and Price fields.");
+                return;
+            }
+
+            const bSizeDisplay = bSizeRaw ? (sizeDictionary[bSizeRaw] || bSizeRaw) : "";
+            const formattedPrice = parseFloat(bPrice).toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+
+            const container = document.getElementById('preview-container');
+            container.innerHTML = ''; 
+
+            // Page 1 & Page 2: Portrait Bike Hangtags
+            for (let i = 0; i < 2; i++) {
+                const page = document.createElement('div');
+                page.className = 'label-page';
+                
+                page.innerHTML = `
+                    <div class="logo-box">
+                        <img class="logo-tracker" src="https://i.postimg.cc/hj7x8STM/CNB-final-logo-no-tagline.jpg" alt="Logo">
+                    </div>
+                    <div class="divider top"></div>
+                    <div class="center-content">
+                        <div class="shrink-text t-brand">${bBrand}</div>
+                        <div class="shrink-text t-model">${bModel}</div>
+                        ${bSizeDisplay ? `<div class="shrink-text t-size">${bSizeDisplay}</div>` : ''}
+                    </div>
+                    <div class="divider bottom"></div>
+                    <div class="shrink-text t-price">${formattedPrice}</div>
+                    ${!isKickstandChecked ? `<div class="kickstand-notice">Kickstand available for extra charge.</div>` : ''}
+                `;
+                container.appendChild(page);
+            }
+
+            // Page 3: Rotated Horizontal Accessory Box Tag
+            if (runBoxTag) {
+                const boxWrapper = document.createElement('div');
+                boxWrapper.className = 'label-page box-tag-wrapper';
+                
+                boxWrapper.innerHTML = `
+                    <div class="box-tag-inner">
+                        <div class="box-header">
+                            <div class="box-logo-box">
+                                <img class="logo-tracker" src="https://i.postimg.cc/hj7x8STM/CNB-final-logo-no-tagline.jpg" alt="CNB Logo">
+                            </div>
+                            <div class="box-header-title-box">
+                                <div class="box-title-line-1">CHARGER, MANUAL,</div>
+                                <div class="box-title-line-2">ACCESSORIES</div>
+                            </div>
+                        </div>
+                        <div class="box-body">
+                            <div class="box-identity-row">
+                                <span class="box-t-brand">${bBrand}</span>
+                                <span class="box-t-model">${bModel}</span>
+                            </div>
+                            <div class="box-specs-row">
+                                <div class="box-spec-item"><span class="box-spec-label">SIZE:</span> <span class="box-spec-value">${bSizeDisplay || 'NONE'}</span></div>
+                                <div class="box-spec-item"><span class="box-spec-label">COLOR:</span> <span class="box-spec-value">${boxColor || 'NONE'}</span></div>
+                            </div>
+                            <div class="box-footer-tracking-row">
+                                <div class="box-serial-container">
+                                    <div class="box-serial-header-text">SERIAL:</div>
+                                    <div class="box-t-serial-wrapper">
+                                        <div class="box-t-serial">${boxSerial || 'NONE'}</div>
+                                    </div>
+                                </div>
+                                <div class="box-barcode-container">
+                                    <svg class="box-barcode-canvas" id="box-barcode-node"></svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(boxWrapper);
+            }
+
+            document.getElementById('ui-title').style.display = 'block';
+
+            // Wait a paint frame to accurately process container bounding thresholds
+            setTimeout(() => {
+                const normalPages = container.querySelectorAll('.label-page:not(.box-tag-wrapper)');
+                normalPages.forEach(page => {
+                    scaleNodeToFit(page.querySelector('.t-brand'), 68);
+                    scaleNodeToFit(page.querySelector('.t-model'), 44);
+                    const sizeNode = page.querySelector('.t-size');
+                    if (sizeNode) scaleNodeToFit(sizeNode, 38);
+                    scaleNodeToFit(page.querySelector('.t-price'), 85);
+                });
+
+                // Compute scaling rules directly inside the 6in landscape boundaries
+                if (runBoxTag) {
+                    const boxInner = container.querySelector('.box-tag-inner');
+                    scaleNodeToFit(boxInner.querySelector('.box-identity-row'), 42);
+                    scaleNodeToFit(boxInner.querySelector('.box-t-serial'), 32);
+
+                    // Code 128 Barcode Generation Logic
+                    const barcodeSvg = document.getElementById('box-barcode-node');
+                    if (boxSystemId) {
+                        try {
+                            JsBarcode("#box-barcode-node", boxSystemId, {
+                                format: "CODE128",
+                                lineColor: "#000000",
+                                width: 2,
+                                height: 55,
+                                displayValue: true,
+                                fontSize: 11,
+                                font: "monospace",
+                                margin: 0
+                            });
+                        } catch (err) {
+                            console.error("Barcode system arguments failed validation checks.", err);
+                        }
+                    } else {
+                        barcodeSvg.style.display = 'none';
+                    }
+                }
+
+                // Verify logos loaded safely before starting the printer pipeline
+                const logos = document.querySelectorAll('.logo-tracker');
+                let loadedCount = 0;
+                
+                const tryPrint = () => {
+                    loadedCount++;
+                    if (loadedCount === logos.length) setTimeout(() => window.print(), 100);
+                };
+
+                if(logos.length === 0) {
+                    setTimeout(() => window.print(), 100);
+                } else {
+                    logos.forEach(img => {
+                        if (img.complete) tryPrint();
+                        else { img.onload = tryPrint; img.onerror = tryPrint; }
+                    });
+                }
+            }, 60);
+        }
+    </script>
+</body>
+</html>
