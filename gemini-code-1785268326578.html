@@ -1,0 +1,1288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Label Studio - Cyclical Nature Bicycles</title>
+    <link rel="icon" type="image/jpeg" href="https://i.postimg.cc/hj7x8STM/CNB-final-logo-no-tagline.jpg">
+
+    <!-- External Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Dancing+Script:wght@700&family=Fira+Code:wght@500;700&family=Inter:wght@400;600;800&family=Lora:ital,wght@0,600;1,600&family=Montserrat:ital,wght@0,400;0,700;0,900;1,800&family=Open+Sans:wght@400;600;700&family=Oswald:wght@500;700&family=Pacifico&family=Playfair+Display:wght@700;900&family=Poppins:wght@400;600;800&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <!-- CDN Dependencies: Fabric.js, JsBarcode, QRCode.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.5/JsBarcode.all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <style>
+        /* --- Root & System Base --- */
+        :root {
+            --brand-blue: #0066cc;
+            --brand-blue-hover: #0052a3;
+            --bg-light: #f4f6f8;
+            --panel-bg: #ffffff;
+            --border-color: #e2e8f0;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* --- Header Navigation Bar (Fixed Horizontal Tabs) --- */
+        .main-header {
+            background-color: #ffffff;
+            padding: 12px 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            border-bottom: 1px solid var(--border-color);
+            gap: 16px;
+            flex-wrap: nowrap;
+        }
+        .brand-title {
+            font-weight: 800;
+            font-size: 1.15rem;
+            color: #111;
+            letter-spacing: -0.3px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .nav-links {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            white-space: nowrap;
+            padding: 2px 0;
+            -webkit-overflow-scrolling: touch;
+        }
+        .nav-links::-webkit-scrollbar {
+            height: 4px;
+        }
+        .nav-links::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 4px;
+        }
+        .nav-links a {
+            text-decoration: none;
+            color: #555;
+            font-weight: 600;
+            font-size: 0.9rem;
+            padding: 7px 14px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .nav-links a:hover {
+            color: var(--brand-blue);
+            background-color: #f0f7ff;
+        }
+        .nav-links a.active {
+            color: var(--brand-blue);
+            background-color: #e6f2ff;
+        }
+
+        /* --- Application Modal Setup --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(4px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 1;
+            transition: opacity 0.25s ease;
+        }
+        .modal-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .modal-card {
+            background: #ffffff;
+            width: 480px;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            text-align: center;
+        }
+        .modal-card h2 {
+            font-size: 1.35rem;
+            margin-bottom: 8px;
+            color: var(--text-dark);
+            font-weight: 800;
+        }
+        .modal-card p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 24px;
+        }
+        .modal-form-group {
+            text-align: left;
+            margin-bottom: 18px;
+        }
+        .modal-form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: #334155;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .modal-select {
+            width: 100%;
+            padding: 12px;
+            font-size: 0.95rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: #f8fafc;
+            color: var(--text-dark);
+            outline: none;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .modal-btn {
+            width: 100%;
+            background-color: var(--brand-blue);
+            color: white;
+            border: none;
+            padding: 14px;
+            font-size: 1rem;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background 0.2s;
+        }
+        .modal-btn:hover { background-color: var(--brand-blue-hover); }
+
+        /* --- Editor Shell --- */
+        .editor-shell {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            height: calc(100vh - 60px);
+            overflow: hidden;
+        }
+
+        /* --- Toolbar Architecture --- */
+        .toolbar {
+            background: #ffffff;
+            border-bottom: 1px solid var(--border-color);
+            padding: 8px 18px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            user-select: none;
+            z-index: 10;
+        }
+        .tool-group {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            border-right: 1px solid var(--border-color);
+            padding-right: 10px;
+        }
+        .tool-group:last-child {
+            border-right: none;
+            padding-right: 0;
+            margin-left: auto;
+        }
+        .tool-btn {
+            background: transparent;
+            border: 1px solid transparent;
+            padding: 6px 9px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #334155;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.15s ease;
+        }
+        .tool-btn:hover {
+            background: #f1f5f9;
+            color: var(--brand-blue);
+        }
+        .tool-btn.active {
+            background: #e0f2fe;
+            color: var(--brand-blue);
+            border-color: #bae6fd;
+        }
+        .tool-btn svg { width: 16px; height: 16px; fill: currentColor; }
+        
+        .tool-select, .tool-input {
+            padding: 5px 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.85rem;
+            background: #ffffff;
+            color: var(--text-dark);
+            outline: none;
+            font-weight: 500;
+        }
+        .tool-label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-right: 2px;
+        }
+
+        /* --- Workspace Viewport & Responsive Vertical Scaling --- */
+        .workspace-viewport {
+            flex: 1;
+            background-color: #e2e8f0;
+            background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+            background-size: 16px 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            padding: 30px;
+        }
+        
+        .canvas-card-wrapper {
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18), 0 0 0 1px rgba(0,0,0,0.06);
+            border-radius: 4px;
+            position: relative;
+            transform-origin: center center;
+            transition: transform 0.15s ease-out;
+        }
+
+        .label-badge {
+            position: absolute;
+            top: -28px;
+            left: 0;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        /* --- Print Rules --- */
+        @media print {
+            .main-header, .toolbar, .modal-overlay, .label-badge, .no-print {
+                display: none !important;
+            }
+            body, .editor-shell, .workspace-viewport {
+                background: white !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                overflow: visible !important;
+                display: block !important;
+            }
+            .canvas-card-wrapper {
+                box-shadow: none !important;
+                border: none !important;
+                margin: 0 !important;
+                position: absolute !important;
+                top: 0 !important;
+                left: 0 !important;
+                transform: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header class="main-header">
+        <div class="brand-title">
+            <img src="https://i.postimg.cc/hj7x8STM/CNB-final-logo-no-tagline.jpg" alt="Logo" style="height:26px; border-radius:4px;">
+            Cyclical Nature Bicycles
+        </div>
+        <nav class="nav-links">
+            <a href="index.html">Open/Close Cash</a>
+            <a href="bikelabels.html">Bike Labels</a>
+            <a href="specialorders.html">Special Orders</a>
+            <a href="depositlabels.html">Deposit Labels</a>
+            <a href="#" class="active">Custom Editor</a>
+        </nav>
+    </header>
+
+    <!-- Initial Setup Modal -->
+    <div class="modal-overlay" id="launch-modal">
+        <div class="modal-card">
+            <h2>Label Studio Setup</h2>
+            <p>Select your target label footprint and orientation to initialize the interactive workspace.</p>
+            
+            <div class="modal-form-group">
+                <label for="label-type-select">Label Media Type:</label>
+                <select id="label-type-select" class="modal-select">
+                    <option value="30336">DYMO 30336 White (2.125" × 1.00")</option>
+                    <option value="30256">DYMO 30256 Red Stock (2.3125" × 4.00")</option>
+                    <option value="4x6">Shipping Label (4.00" × 6.00")</option>
+                </select>
+            </div>
+
+            <div class="modal-form-group">
+                <label for="label-orient-select">Orientation:</label>
+                <select id="label-orient-select" class="modal-select">
+                    <option value="landscape">Landscape</option>
+                    <option value="portrait">Portrait</option>
+                </select>
+            </div>
+
+            <button class="modal-btn" onclick="initializeWorkspace()">Launch Studio Canvas</button>
+        </div>
+    </div>
+
+    <!-- Main Editor Shell -->
+    <div class="editor-shell">
+        
+        <!-- Toolbar -->
+        <div class="toolbar">
+            
+            <div class="tool-group">
+                <button class="tool-btn" onclick="openSetupModal()" title="Change Label Settings">
+                    <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+                    New Spec
+                </button>
+                <button class="tool-btn" onclick="triggerPrint()" style="color:var(--brand-blue); font-weight:700;">
+                    <svg viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>
+                    Print
+                </button>
+            </div>
+
+            <!-- Undo / Redo -->
+            <div class="tool-group">
+                <button class="tool-btn" onclick="undo()" id="btn-undo" title="Undo (Ctrl+Z)">
+                    <svg viewBox="0 0 24 24"><path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/></svg>
+                </button>
+                <button class="tool-btn" onclick="redo()" id="btn-redo" title="Redo (Ctrl+Y)">
+                    <svg viewBox="0 0 24 24"><path d="M18.4 10.6C16.55 8.99 14.15 8 11.5 8c-4.65 0-8.58 3.03-9.96 7.22L3.9 16c1.05-3.19 4.05-5.5 7.6-5.5 1.95 0 3.73.72 5.12 1.88L13 16h9V7l-3.6 3.6z"/></svg>
+                </button>
+            </div>
+
+            <!-- Add Elements -->
+            <div class="tool-group">
+                <button class="tool-btn" onclick="addText()">
+                    <svg viewBox="0 0 24 24"><path d="M5 4v3h5v12h3V7h5V4H5z"/></svg>
+                    Text
+                </button>
+                <button class="tool-btn" onclick="document.getElementById('img-upload-input').click()">
+                    <svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+                    Image
+                </button>
+                <input type="file" id="img-upload-input" accept="image/*" style="display:none" onchange="uploadImage(event)">
+
+                <button class="tool-btn" onclick="addBarcodePrompt()">
+                    <svg viewBox="0 0 24 24"><path d="M2 4h2v16H2V4zm4 0h1v16H6V4zm3 0h2v16H9V4zm4 0h1v16h-1V4zm3 0h2v16h-2V4zm4 0h2v16h-2V4z"/></svg>
+                    Barcode
+                </button>
+                <button class="tool-btn" onclick="addQRCodePrompt()">
+                    <svg viewBox="0 0 24 24"><path d="M3 3h8v8H3V3zm2 2v4h4V5H5zm8-2h8v8h-8V3zm2 2v4h4V5h-4zM3 13h8v8H3v-8zm2 2v4h4v-4H5zm13-2h3v2h-3v-2zm-3 0h2v3h-2v-3zm0 5h5v3h-5v-3zm3-2h2v2h-2v-2z"/></svg>
+                    QR Code
+                </button>
+                
+                <select class="tool-select" onchange="addShape(this.value); this.value='';" title="Add Shape">
+                    <option value="" disabled selected>+ Shapes</option>
+                    <option value="rect">Rectangle</option>
+                    <option value="circle">Circle</option>
+                    <option value="line">Line</option>
+                </select>
+            </div>
+
+            <!-- Text Controls -->
+            <div class="tool-group" id="text-tools">
+                <select id="font-family-select" class="tool-select" onchange="applyTextStyle('fontFamily', this.value)">
+                    <option value="Arial" selected>Arial</option>
+                    <option value="Inter">Inter</option>
+                    <option value="Roboto">Roboto</option>
+                    <option value="Montserrat">Montserrat</option>
+                    <option value="Oswald">Oswald</option>
+                    <option value="Playfair Display">Playfair Display</option>
+                    <option value="Courier Prime">Courier Prime</option>
+                    <option value="Pacifico">Pacifico</option>
+                    <option value="Anton">Anton</option>
+                    <option value="Fira Code">Fira Code</option>
+                    <option value="Dancing Script">Dancing Script</option>
+                </select>
+
+                <input type="number" id="font-size-input" class="tool-input" style="width:62px;" value="100" min="8" max="300" onchange="applyTextStyle('fontSize', parseInt(this.value))">
+
+                <button class="tool-btn" id="btn-bold" onclick="toggleTextWeight()" title="Bold (Ctrl+B)"><b>B</b></button>
+                <button class="tool-btn" id="btn-italic" onclick="toggleTextStyle()" title="Italic (Ctrl+I)"><i>I</i></button>
+                <button class="tool-btn" id="btn-underline" onclick="toggleTextUnderline()" title="Underline (Ctrl+U)"><u>U</u></button>
+            </div>
+
+            <!-- Alignment -->
+            <div class="tool-group">
+                <span class="tool-label">Align:</span>
+                <button class="tool-btn" onclick="applyTextAlign('left')" title="Align Left">
+                    <svg viewBox="0 0 24 24"><path d="M15 15H3v2h12v-2zm0-8H3v2h12V7zM3 13h18v-2H3v2zm0 8h18v-2H3v2zM3 3v2h18V3H3z"/></svg>
+                </button>
+                <button class="tool-btn" onclick="applyTextAlign('center')" title="Align Center">
+                    <svg viewBox="0 0 24 24"><path d="M7 15v2h10v-2H7zm-4-8v2h18V7H3zm2 6h14v-2H5v2zm-2 8h18v-2H3v2zM7 3v2h10V3H7z"/></svg>
+                </button>
+                <button class="tool-btn" onclick="applyTextAlign('right')" title="Align Right">
+                    <svg viewBox="0 0 24 24"><path d="M9 15h12v2H9v-2zm0-8h12v2H9V7zm-6 6h18v-2H3v2zm0 8h18v-2H3v2zM3 3v2h18V3H3z"/></svg>
+                </button>
+            </div>
+
+            <!-- Opacity Slider -->
+            <div class="tool-group">
+                <span class="tool-label">Opacity:</span>
+                <input type="range" id="opacity-slider" min="0.1" max="1" step="0.05" value="1" 
+                       oninput="applyOpacityVisual(this.value)" 
+                       onchange="applyOpacityHistory()" 
+                       class="tool-input" style="width:70px;" title="Opacity">
+            </div>
+
+            <!-- Canvas Alignment -->
+            <div class="tool-group">
+                <span class="tool-label">Canvas:</span>
+                <button class="tool-btn" onclick="alignCanvasCenterH()" title="Center Horizontally">
+                    <svg viewBox="0 0 24 24"><path d="M11 2h2v5h-2zm0 15h2v5h-2zm-7-6h5v2H4zm11 0h5v2h-5zM8 7h8v10H8z" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+                </button>
+                <button class="tool-btn" onclick="alignCanvasCenterV()" title="Center Vertically">
+                    <svg viewBox="0 0 24 24"><path d="M2 11h5v2H2zm15 0h5v2h-5zm-6-7h2v5h-2zm0 11h2v5h-2zM7 8h10v8H7z" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+                </button>
+            </div>
+
+            <!-- Layering & Delete -->
+            <div class="tool-group">
+                <button class="tool-btn" onclick="bringForward()" title="Bring Forward">
+                    <svg viewBox="0 0 24 24"><path d="M2 7h10v10H2z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2h10v10H12z"/></svg>
+                </button>
+                <button class="tool-btn" onclick="sendBackward()" title="Send Backward">
+                    <svg viewBox="0 0 24 24"><path d="M12 12h10v10H12z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M2 2h10v10H2z"/></svg>
+                </button>
+                <button class="tool-btn" onclick="duplicateSelected()" title="Duplicate">
+                    <svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                </button>
+                <button class="tool-btn" onclick="deleteSelected()" style="color:#e11d48;" title="Delete Selected">
+                    <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                </button>
+            </div>
+
+        </div>
+
+        <!-- Canvas Container -->
+        <div class="workspace-viewport">
+            <div class="canvas-card-wrapper" id="canvas-card">
+                <div class="label-badge" id="label-badge-text">DYMO 30336 (2.125" x 1")</div>
+                <canvas id="label-canvas"></canvas>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        let canvas;
+        let currentSpec = { type: '30336', orientation: 'landscape', widthPx: 638, heightPx: 300, bgColor: '#ffffff' };
+        let historyStack = [];
+        let redoStack = [];
+        let isHistoryLocked = false;
+
+        window.addEventListener('load', () => {
+            initFabricCanvas();
+            setupClipboardPaste();
+            setupKeyboardShortcuts();
+            openSetupModal();
+            window.addEventListener('resize', fitCanvasToViewport);
+        });
+
+        function initFabricCanvas() {
+            canvas = new fabric.Canvas('label-canvas', {
+                backgroundColor: '#ffffff',
+                preserveObjectStacking: true,
+                selection: true
+            });
+
+            // Universal Bounding Interception
+            canvas.on('object:moving', function(e) {
+                strictBoundingBox(e);
+                handleAlignmentGuides(e);
+            });
+            canvas.on('object:scaling', function(e) {
+                handleObjectScaling(e);
+                strictBoundingBox(e);
+            });
+            canvas.on('object:modifying', strictBoundingBox);
+            canvas.on('object:rotating', strictBoundingBox);
+            canvas.on('text:changed', function(e) {
+                handleTextChanged(e);
+                strictBoundingBox(e);
+            });
+            
+            canvas.on('mouse:up', clearAlignmentGuides);
+
+            // History listeners
+            canvas.on('object:added', recordHistory);
+            canvas.on('object:modified', recordHistory);
+
+            // Contextual toolbar sync
+            canvas.on('selection:created', updateToolbarState);
+            canvas.on('selection:updated', updateToolbarState);
+            canvas.on('selection:cleared', updateToolbarState);
+        }
+
+        /* --- BULLETPROOF BOUNDING BOX ENGINE --- */
+        function strictBoundingBox(e) {
+            const obj = e.target;
+            if (!obj) return;
+            
+            const margin = 5;
+            obj.setCoords(); 
+            
+            let bound = obj.getBoundingRect(); 
+            const maxW = canvas.width - (margin * 2);
+            const maxH = canvas.height - (margin * 2);
+
+            const action = e.transform ? e.transform.action : '';
+            const isResize = action && action.includes('scale');
+
+            // 1. Constrain Over-Scaling (Absolute limits)
+            if (bound.width > maxW || bound.height > maxH) {
+                 if (obj.isType('textbox')) {
+                     if (obj.width > maxW) obj.set('width', maxW);
+                     fitTextToCanvas(obj);
+                 } else {
+                     const ratioX = maxW / bound.width;
+                     const ratioY = maxH / bound.height;
+                     const safeRatio = Math.min(ratioX, ratioY, 1);
+                     obj.set({ 
+                         scaleX: (obj.scaleX || 1) * safeRatio, 
+                         scaleY: (obj.scaleY || 1) * safeRatio 
+                     });
+                 }
+                 obj.setCoords();
+                 bound = obj.getBoundingRect();
+            }
+
+            // 2. Positional Constraints
+            let newLeft = obj.left;
+            let newTop = obj.top;
+
+            if (bound.left < margin) {
+                newLeft += (margin - bound.left);
+            } else if (bound.left + bound.width > canvas.width - margin) {
+                newLeft -= ((bound.left + bound.width) - (canvas.width - margin));
+            }
+
+            if (bound.top < margin) {
+                newTop += (margin - bound.top);
+            } else if (bound.top + bound.height > canvas.height - margin) {
+                newTop -= ((bound.top + bound.height) - (canvas.height - margin));
+            }
+
+            // Only apply positional shift if we are moving the object, OR if it's still out of bounds.
+            if (newLeft !== obj.left || newTop !== obj.top) {
+                if (isResize && obj.isType('textbox')) {
+                    // PREVENT THE SLIDING BUG: If the resize caused the boundary breach, 
+                    // cap the dimension instead of shifting the coordinates.
+                    if (newLeft < obj.left) { 
+                        // Right edge breached
+                        obj.set('width', canvas.width - margin - obj.left);
+                    } else if (newLeft > obj.left) { 
+                        // Left edge breached
+                        obj.set({ left: margin, width: obj.width - (margin - obj.left) });
+                    }
+                    obj.initDimensions();
+                    fitTextToCanvas(obj);
+                } else {
+                    // Standard move shift
+                    obj.set({ left: newLeft, top: newTop });
+                }
+                obj.setCoords();
+            }
+        }
+
+        /* Dynamic Viewport Auto-Fitting for Vertical & Large Canvas Specs */
+        function fitCanvasToViewport() {
+            const viewport = document.querySelector('.workspace-viewport');
+            const card = document.getElementById('canvas-card');
+            if (!viewport || !card || !canvas) return;
+
+            const paddingX = 60;
+            const paddingY = 80;
+            const availW = viewport.clientWidth - paddingX;
+            const availH = viewport.clientHeight - paddingY;
+
+            const cardW = currentSpec.widthPx;
+            const cardH = currentSpec.heightPx;
+
+            const scaleX = availW / cardW;
+            const scaleY = availH / cardH;
+            const scale = Math.min(scaleX, scaleY, 1);
+
+            card.style.transform = `scale(${scale})`;
+        }
+
+        // --- DYMO Scaling Mechanics ---
+        function handleObjectScaling(e) {
+            const obj = e.target;
+            if (!obj) return;
+
+            if (obj.isType('textbox')) {
+                const corner = e.transform ? e.transform.corner : '';
+
+                if (corner === 'ml' || corner === 'mr') {
+                    // Horizontal drag: adjust container width & wrap words cleanly
+                    const newWidth = Math.max(30, obj.width * obj.scaleX);
+                    obj.set({ width: newWidth, scaleX: 1, scaleY: 1 });
+                    obj.initDimensions();
+                } else if (corner === 'mt' || corner === 'mb') {
+                    // Vertical drag: directly scale font size
+                    const newFontSize = Math.max(10, Math.round(obj.fontSize * obj.scaleY));
+                    obj.set({ fontSize: newFontSize, scaleX: 1, scaleY: 1 });
+                    obj.initDimensions();
+                } else {
+                    // Corner drag: uniform scale
+                    const scale = Math.max(obj.scaleX, obj.scaleY);
+                    const newFontSize = Math.max(10, Math.round(obj.fontSize * scale));
+                    obj.set({ fontSize: newFontSize, scaleX: 1, scaleY: 1 });
+                    obj.initDimensions();
+                }
+
+                fitTextToCanvas(obj);
+                updateToolbarState();
+            }
+        }
+
+        function handleTextChanged(e) {
+            const obj = e.target;
+            if (obj && obj.isType('textbox')) {
+                obj.initDimensions();
+                fitTextToCanvas(obj);
+            }
+        }
+
+        // Fit Text to Canvas purely via font size to prevent slide-shifting
+        function fitTextToCanvas(textbox) {
+            if (!textbox || !textbox.isType('textbox')) return;
+
+            textbox.set('splitByGrapheme', false); 
+
+            const margin = 5;
+            const maxW = canvas.width - (margin * 2);
+            const maxH = canvas.height - (margin * 2);
+
+            if (textbox.width > maxW) {
+                textbox.set('width', maxW);
+            }
+
+            let fs = textbox.fontSize;
+            textbox.initDimensions();
+
+            // Downscale font size safely if height exceeds canvas height
+            while ((textbox.height > maxH || textbox.width > maxW) && fs > 10) {
+                fs -= 1;
+                textbox.set('fontSize', fs);
+                textbox.initDimensions();
+            }
+
+            // Coordinates logic correctly delegated to strictBoundingBox()
+            textbox.setCoords();
+        }
+
+        // Modal & Specs setup
+        function openSetupModal() {
+            document.getElementById('launch-modal').classList.remove('hidden');
+        }
+
+        function initializeWorkspace() {
+            const type = document.getElementById('label-type-select').value;
+            const orientation = document.getElementById('label-orient-select').value;
+            
+            currentSpec.type = type;
+            currentSpec.orientation = orientation;
+
+            let baseW, baseH;
+            if (type === '30336') {
+                baseW = 638;
+                baseH = 300;
+                currentSpec.bgColor = '#ffffff';
+                document.getElementById('label-badge-text').innerText = `DYMO 30336 White (2.125" × 1.00") - ${orientation}`;
+            } else if (type === '30256') {
+                baseW = 700;
+                baseH = 405;
+                currentSpec.bgColor = '#e11d48';
+                document.getElementById('label-badge-text').innerText = `DYMO 30256 Red Roll (2.3125" × 4.00") - ${orientation}`;
+            } else {
+                baseW = 600;
+                baseH = 900;
+                currentSpec.bgColor = '#ffffff';
+                document.getElementById('label-badge-text').innerText = `Shipping Label (4.00" × 6.00") - ${orientation}`;
+            }
+
+            if (orientation === 'landscape' && baseH > baseW) {
+                [baseW, baseH] = [baseH, baseW];
+            } else if (orientation === 'portrait' && baseW > baseH) {
+                [baseW, baseH] = [baseH, baseW];
+            }
+
+            currentSpec.widthPx = baseW;
+            currentSpec.heightPx = baseH;
+
+            canvas.setWidth(baseW);
+            canvas.setHeight(baseH);
+            canvas.clear();
+            canvas.setBackgroundColor(currentSpec.bgColor, canvas.renderAll.bind(canvas));
+
+            fitCanvasToViewport();
+
+            historyStack = [];
+            redoStack = [];
+            recordHistory();
+
+            document.getElementById('launch-modal').classList.add('hidden');
+        }
+
+        // Alignment Guidelines
+        let guideLines = [];
+
+        function clearAlignmentGuides() {
+            guideLines.forEach(line => canvas.remove(line));
+            guideLines = [];
+            canvas.renderAll();
+        }
+
+        function handleAlignmentGuides(e) {
+            clearAlignmentGuides();
+            const obj = e.target;
+            const objCenter = obj.getCenterPoint();
+            const canvasWidth = canvas.width;
+            const canvasHeight = canvas.height;
+            const snapThreshold = 6;
+
+            let snappedX = false;
+
+            if (Math.abs(objCenter.x - canvasWidth / 2) < snapThreshold) {
+                obj.setPositionByOrigin(new fabric.Point(canvasWidth / 2, objCenter.y), 'center', 'center');
+                drawGuideLine(canvasWidth / 2, 0, canvasWidth / 2, canvasHeight);
+                snappedX = true;
+            }
+
+            if (Math.abs(objCenter.y - canvasHeight / 2) < snapThreshold) {
+                obj.setPositionByOrigin(new fabric.Point(snappedX ? canvasWidth / 2 : objCenter.x, canvasHeight / 2), 'center', 'center');
+                drawGuideLine(0, canvasHeight / 2, canvasWidth, canvasHeight / 2);
+            }
+        }
+
+        function drawGuideLine(x1, y1, x2, y2) {
+            const line = new fabric.Line([x1, y1, x2, y2], {
+                stroke: currentSpec.bgColor === '#e11d48' ? '#ffffff' : '#ef4444',
+                strokeWidth: 1.5,
+                selectable: false,
+                evented: false,
+                strokeDashArray: [4, 4]
+            });
+            guideLines.push(line);
+            canvas.add(line);
+        }
+
+        // History Manager
+        function recordHistory() {
+            if (isHistoryLocked) return;
+            const json = JSON.stringify(canvas.toDatalessJSON());
+            historyStack.push(json);
+            redoStack = [];
+        }
+
+        function undo() {
+            if (historyStack.length > 1) {
+                isHistoryLocked = true;
+                redoStack.push(historyStack.pop());
+                const state = historyStack[historyStack.length - 1];
+                canvas.loadFromJSON(state, () => {
+                    canvas.renderAll();
+                    isHistoryLocked = false;
+                });
+            }
+        }
+
+        function redo() {
+            if (redoStack.length > 0) {
+                isHistoryLocked = true;
+                const state = redoStack.pop();
+                historyStack.push(state);
+                canvas.loadFromJSON(state, () => {
+                    canvas.renderAll();
+                    isHistoryLocked = false;
+                });
+            }
+        }
+
+        // Inserter Functions
+        function addText(customText = 'Double click to edit') {
+            const initialFontSize = Math.min(100, Math.floor(canvas.height * 0.45));
+
+            const text = new fabric.Textbox(customText, {
+                left: 20,
+                top: 20,
+                width: canvas.width - 40,
+                fontFamily: 'Arial',
+                fontSize: initialFontSize,
+                fill: '#000000',
+                textAlign: 'left',
+                splitByGrapheme: false,
+                lockUniScaling: false,
+                originX: 'left',
+                originY: 'top',
+                lineHeight: 1.0
+            });
+
+            text.setControlsVisibility({
+                mt: true, mb: true, ml: true, mr: true,
+                tl: true, tr: true, bl: true, br: true, mtr: true
+            });
+
+            canvas.add(text);
+            canvas.setActiveObject(text);
+
+            text.initDimensions();
+            text.top = Math.max(10, Math.floor((canvas.height - text.height) / 2));
+
+            fitTextToCanvas(text);
+            
+            // Validate insertion safely inside boundary logic natively
+            strictBoundingBox({ target: text });
+
+            canvas.renderAll();
+            updateToolbarState();
+        }
+
+        function addShape(shapeType) {
+            let shape;
+            const center = { left: canvas.width / 2, top: canvas.height / 2, originX: 'center', originY: 'center' };
+            
+            if (shapeType === 'rect') {
+                shape = new fabric.Rect({ ...center, width: 120, height: 70, fill: 'transparent', stroke: '#000000', strokeWidth: 3 });
+            } else if (shapeType === 'circle') {
+                shape = new fabric.Circle({ ...center, radius: 45, fill: 'transparent', stroke: '#000000', strokeWidth: 3 });
+            } else if (shapeType === 'line') {
+                shape = new fabric.Line([50, 50, 250, 50], { ...center, stroke: '#000000', strokeWidth: 3 });
+            }
+
+            if (shape) {
+                canvas.add(shape);
+                canvas.setActiveObject(shape);
+                strictBoundingBox({ target: shape });
+            }
+        }
+
+        /* --- Fixed Image Upload & Scaling Handler --- */
+        function uploadImage(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                fabric.Image.fromURL(event.target.result, (img) => {
+                    scaleAndInsertImage(img);
+                }, { crossOrigin: 'anonymous' });
+            };
+            reader.readAsDataURL(file);
+            e.target.value = '';
+        }
+
+        function setupClipboardPaste() {
+            window.addEventListener('paste', (e) => {
+                const items = (e.clipboardData || e.originalEvent?.clipboardData)?.items;
+                if (!items) return;
+
+                for (let item of items) {
+                    if (item.type.indexOf('image') === 0) {
+                        const blob = item.getAsFile();
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                            fabric.Image.fromURL(event.target.result, (img) => {
+                                scaleAndInsertImage(img);
+                            }, { crossOrigin: 'anonymous' });
+                        };
+                        reader.readAsDataURL(blob);
+                    }
+                }
+            });
+        }
+
+        function scaleAndInsertImage(img) {
+            if (!img) return;
+
+            const imgWidth = img.width || 100;
+            const imgHeight = img.height || 100;
+
+            const maxW = canvas.width * 0.75;
+            const maxH = canvas.height * 0.75;
+
+            let scale = Math.min(maxW / imgWidth, maxH / imgHeight, 1);
+
+            img.set({
+                left: canvas.width / 2,
+                top: canvas.height / 2,
+                originX: 'center',
+                originY: 'center',
+                scaleX: scale,
+                scaleY: scale,
+                cornerStyle: 'circle',
+                cornerColor: '#0066cc',
+                borderColor: '#0066cc',
+                cornerSize: 8,
+                transparentCorners: false,
+                lockUniScaling: true
+            });
+
+            canvas.add(img);
+            canvas.setActiveObject(img);
+            strictBoundingBox({ target: img });
+            canvas.renderAll();
+            recordHistory();
+        }
+
+        function addBarcodePrompt() {
+            const val = prompt('Enter Barcode Value:', '7283976855');
+            if (!val) return;
+
+            try {
+                const buffer = document.createElement('canvas');
+                JsBarcode(buffer, val, { format: "CODE128", width: 2, height: 60, displayValue: true });
+                
+                fabric.Image.fromURL(buffer.toDataURL(), (img) => {
+                    scaleAndInsertImage(img);
+                });
+            } catch (err) {
+                alert('Invalid Barcode input.');
+            }
+        }
+
+        function addQRCodePrompt() {
+            const val = prompt('Enter URL or Text for QR Code:', 'https://cnbicycles.com');
+            if (!val) return;
+
+            const buffer = document.createElement('div');
+            new QRCode(buffer, { text: val, width: 150, height: 150 });
+
+            const qrCanvas = buffer.querySelector('canvas');
+            if (qrCanvas) {
+                fabric.Image.fromURL(qrCanvas.toDataURL(), (img) => {
+                    scaleAndInsertImage(img);
+                });
+            } else {
+                // Fallback for older browsers
+                const imgTag = buffer.querySelector('img');
+                if (imgTag && imgTag.src) {
+                    fabric.Image.fromURL(imgTag.src, (img) => scaleAndInsertImage(img));
+                }
+            }
+        }
+
+        // Controls Sync
+        function applyTextStyle(styleProp, value) {
+            const activeObjects = canvas.getActiveObjects();
+            let changed = false;
+            
+            activeObjects.forEach(obj => {
+                if (obj.isType('textbox')) {
+                    obj.set(styleProp, value);
+                    obj.initDimensions();
+                    fitTextToCanvas(obj);
+                    strictBoundingBox({ target: obj });
+                    changed = true;
+                }
+            });
+
+            if (changed) {
+                canvas.renderAll();
+                recordHistory();
+            }
+        }
+
+        function toggleTextWeight() {
+            const activeObjects = canvas.getActiveObjects();
+            let changed = false;
+            
+            activeObjects.forEach(obj => {
+                if (obj.isType('textbox')) {
+                    const current = obj.get('fontWeight');
+                    obj.set('fontWeight', (current === 'bold' || current === 700) ? 'normal' : 'bold');
+                    obj.initDimensions();
+                    fitTextToCanvas(obj);
+                    strictBoundingBox({ target: obj });
+                    changed = true;
+                }
+            });
+
+            if (changed) {
+                canvas.renderAll();
+                updateToolbarState();
+                recordHistory();
+            }
+        }
+
+        function toggleTextStyle() {
+            const activeObjects = canvas.getActiveObjects();
+            let changed = false;
+
+            activeObjects.forEach(obj => {
+                if (obj.isType('textbox')) {
+                    const current = obj.get('fontStyle');
+                    obj.set('fontStyle', current === 'italic' ? 'normal' : 'italic');
+                    obj.initDimensions();
+                    fitTextToCanvas(obj);
+                    strictBoundingBox({ target: obj });
+                    changed = true;
+                }
+            });
+
+            if (changed) {
+                canvas.renderAll();
+                updateToolbarState();
+                recordHistory();
+            }
+        }
+
+        function toggleTextUnderline() {
+            const activeObjects = canvas.getActiveObjects();
+            let changed = false;
+
+            activeObjects.forEach(obj => {
+                if (obj.isType('textbox')) {
+                    const current = obj.get('underline');
+                    obj.set('underline', !current);
+                    changed = true;
+                }
+            });
+
+            if (changed) {
+                canvas.renderAll();
+                updateToolbarState();
+                recordHistory();
+            }
+        }
+
+        function applyTextAlign(align) {
+            const activeObjects = canvas.getActiveObjects();
+            let changed = false;
+
+            activeObjects.forEach(obj => {
+                if (obj.isType('textbox')) {
+                    obj.set('textAlign', align);
+                    changed = true;
+                }
+            });
+
+            if (changed) {
+                canvas.renderAll();
+                recordHistory();
+            }
+        }
+
+        function applyOpacityVisual(val) {
+            const active = canvas.getActiveObject();
+            if (active) {
+                active.set('opacity', parseFloat(val));
+                canvas.renderAll();
+            }
+        }
+
+        function applyOpacityHistory() {
+            recordHistory();
+        }
+
+        function alignCanvasCenterH() {
+            const active = canvas.getActiveObject();
+            if (active) {
+                active.centerH();
+                active.setCoords();
+                strictBoundingBox({ target: active });
+                canvas.renderAll();
+                recordHistory();
+            }
+        }
+
+        function alignCanvasCenterV() {
+            const active = canvas.getActiveObject();
+            if (active) {
+                active.centerV();
+                active.setCoords();
+                strictBoundingBox({ target: active });
+                canvas.renderAll();
+                recordHistory();
+            }
+        }
+
+        function bringForward() {
+            const active = canvas.getActiveObject();
+            if (active) { 
+                canvas.bringForward(active); 
+                canvas.renderAll();
+                recordHistory(); 
+            }
+        }
+
+        function sendBackward() {
+            const active = canvas.getActiveObject();
+            if (active) { 
+                canvas.sendBackwards(active); 
+                canvas.renderAll();
+                recordHistory(); 
+            }
+        }
+
+        function duplicateSelected() {
+            const active = canvas.getActiveObject();
+            if (active) {
+                active.clone((cloned) => {
+                    cloned.set({ left: active.left + 15, top: active.top + 15 });
+                    canvas.add(cloned);
+                    canvas.setActiveObject(cloned);
+                    strictBoundingBox({ target: cloned });
+                    canvas.renderAll();
+                    recordHistory();
+                });
+            }
+        }
+
+        function deleteSelected() {
+            const active = canvas.getActiveObjects();
+            if (active.length) {
+                active.forEach(obj => canvas.remove(obj));
+                canvas.discardActiveObject();
+                canvas.renderAll();
+                recordHistory();
+            }
+        }
+
+        function updateToolbarState() {
+            const active = canvas.getActiveObject();
+            if (active) {
+                document.getElementById('opacity-slider').value = active.get('opacity') || 1;
+                
+                if (active.isType('textbox')) {
+                    document.getElementById('font-family-select').value = active.get('fontFamily') || 'Arial';
+                    document.getElementById('font-size-input').value = Math.round(active.get('fontSize')) || 100;
+
+                    const isBold = active.get('fontWeight') === 'bold' || active.get('fontWeight') === 700;
+                    const isItalic = active.get('fontStyle') === 'italic';
+                    const isUnderline = active.get('underline') === true;
+
+                    document.getElementById('btn-bold').classList.toggle('active', isBold);
+                    document.getElementById('btn-italic').classList.toggle('active', isItalic);
+                    document.getElementById('btn-underline').classList.toggle('active', isUnderline);
+                } else {
+                    resetToolbarVisuals();
+                }
+            } else {
+                resetToolbarVisuals();
+            }
+        }
+
+        function resetToolbarVisuals() {
+            document.getElementById('btn-bold').classList.remove('active');
+            document.getElementById('btn-italic').classList.remove('active');
+            document.getElementById('btn-underline').classList.remove('active');
+        }
+
+        function setupKeyboardShortcuts() {
+            window.addEventListener('keydown', (e) => {
+                const isCtrl = e.ctrlKey || e.metaKey;
+
+                if (isCtrl) {
+                    const key = e.key.toLowerCase();
+                    if (key === 'b') {
+                        e.preventDefault();
+                        toggleTextWeight();
+                    } else if (key === 'i') {
+                        e.preventDefault();
+                        toggleTextStyle();
+                    } else if (key === 'u') {
+                        e.preventDefault();
+                        toggleTextUnderline();
+                    } else if (key === 'z') {
+                        e.preventDefault();
+                        undo();
+                    } else if (key === 'y') {
+                        e.preventDefault();
+                        redo();
+                    }
+                    return;
+                }
+
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+
+                if (e.key === 'Delete' || e.key === 'Backspace') {
+                    const active = canvas.getActiveObject();
+                    if (active && !active.isEditing) {
+                        deleteSelected();
+                    }
+                }
+            });
+        }
+
+        // Print engine
+        function triggerPrint() {
+            canvas.discardActiveObject();
+            canvas.renderAll();
+
+            const dataUrl = canvas.toDataURL({ format: 'png', multiplier: 3 });
+            const printWin = window.open('', '_blank');
+            
+            let labelWidth = '2.125in';
+            let labelHeight = '1in';
+
+            if (currentSpec.type === '30256') {
+                labelWidth = currentSpec.orientation === 'landscape' ? '4in' : '2.3125in';
+                labelHeight = currentSpec.orientation === 'landscape' ? '2.3125in' : '4in';
+            } else if (currentSpec.type === '4x6') {
+                labelWidth = currentSpec.orientation === 'landscape' ? '6in' : '4in';
+                labelHeight = currentSpec.orientation === 'landscape' ? '4in' : '6in';
+            } else {
+                labelWidth = currentSpec.orientation === 'landscape' ? '2.125in' : '1in';
+                labelHeight = currentSpec.orientation === 'landscape' ? '1in' : '2.125in';
+            }
+
+            printWin.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Print Label</title>
+                    <style>
+                        @page { size: ${labelWidth} ${labelHeight}; margin: 0; }
+                        body { margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; background: white; }
+                        img { width: ${labelWidth}; height: ${labelHeight}; object-fit: contain; }
+                    </style>
+                </head>
+                <body>
+                    <img src="${dataUrl}" onload="window.print(); window.close();">
+                </body>
+                </html>
+            `);
+            printWin.document.close();
+        }
+    </script>
+</body>
+</html>
