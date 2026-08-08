@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyclical Nature Bicycles - Special Orders</title>
+    <style>
+        /* --- Base Screen Styles --- */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f6f8;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* --- Global Navigation Bar --- */
+        .main-header {
+            background-color: #ffffff;
+            padding: 15px 40px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+        .brand-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #111;
+        }
+        .nav-links {
+            display: flex;
+            gap: 15px;
+        }
+        .nav-links a {
+            text-decoration: none;
+            color: #555;
+            font-weight: 600;
+            font-size: 0.95rem;
+            padding: 8px 16px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+        .nav-links a:hover {
+            color: #0066cc;
+            background-color: #f0f7ff;
+        }
+        .nav-links a.active {
+            color: #0066cc;
+            background-color: #e6f2ff;
+            cursor: default;
+        }
+
+        /* --- Control Panel UI --- */
+        .control-panel {
+            max-width: 500px;
+            margin: 0 auto 30px auto;
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        h1 {
+            font-size: 1.3rem;
+            margin-top: 0;
+            color: #111;
+            border-bottom: 2px solid #eaeaea;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 15px;
+        }
+        .form-group.checkbox-row {
+            flex-direction: row;
+            align-items: center;
+            gap: 8px;
+            margin-top: 5px;
+        }
+        label {
+            font-weight: 600;
+            margin-bottom: 6px;
+            font-size: 0.9rem;
+        }
+        .form-group.checkbox-row label {
+            margin-bottom: 0;
+            cursor: pointer;
+        }
+        input[type="text"], select {
+            padding: 10px;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            width: 100%;
+            background: #fff;
+        }
+        
+        /* Interactive Gray-Out Mechanics */
+        .product-input-wrapper {
+            opacity: 0.4;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+        .product-input-wrapper.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        button {
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.2s;
+            margin-top: 10px;
+        }
+        button:hover { background-color: #0052a3; }
+
+        .preview-heading {
+            max-width: 6in;
+            margin: 0 auto 10px auto;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            color: #666;
+            text-align: center;
+        }
+
+        /* --- Canvas Target Elements (Screen View) --- */
+        #preview-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-bottom: 60px;
+        }
+        
+        .label-page {
+            background: white;
+            box-sizing: border-box;
+            border: 1px dashed #999;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            overflow: hidden;
+        }
+
+        /* --- MODIFIER TYPE 1: Original 4x6 Configuration --- */
+        .label-page.size-4x6 {
+            width: 6in;
+            height: 4in;
+            padding: 0.25in 0.3in;
+        }
+        .size-4x6 .label-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            width: 100%;
+            height: 0.8in;
+            margin-bottom: 0.12in; 
+        }
+        .size-4x6 .logo-box {
+            height: 100%;
+            width: 2.2in;
+            display: flex;
+            align-items: flex-end;
+            justify-content: flex-start;
+        }
+        .size-4x6 .header-title {
+            font-size: 26pt;
+            font-weight: bold;
+            font-style: italic;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #000;
+            line-height: 1;
+        }
+        .size-4x6 .solid-divider {
+            width: 100%;
+            border-top: 4px solid #000000;
+            margin: 0;
+        }
+        .size-4x6 .bottom-checklist {
+            display: flex;
+            gap: 0.4in;
+            width: 100%;
+            justify-content: flex-start;
+            align-items: center;
+            padding-bottom: 0.05in;
+        }
+
+        /* --- MODIFIER TYPE 2: New 30336 Small Configuration --- */
+        .label-page.size-30336 {
+            width: 2.125in;
+            height: 1in;
+            padding: 0.05in 0.08in;
+        }
+        .size-30336 .label-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            height: 0.22in;
+            margin-bottom: 0.02in;
+        }
+        .size-30336 .logo-box {
+            height: 100%;
+            width: 0.85in;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+        }
+        .size-30336 .header-title {
+            font-size: 9.5pt;
+            font-weight: bold;
+            font-style: italic;
+            text-transform: uppercase;
+            letter-spacing: -0.2px;
+            color: #000;
+            line-height: 1;
+        }
+        .size-30336 .solid-divider {
+            width: 100%;
+            border-top: 1.5px solid #000000;
+            margin: 0;
+        }
+        .size-30336 .bottom-checklist {
+            display: none !important;
+        }
+
+        /* --- Unified Center Core Identity Cluster --- */
+        .center-content {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            flex-grow: 1;
+            width: 100%;
+            overflow: hidden;
+            padding: 0.05in 0;
+        }
+        .shrink-text {
+            display: block;
+            width: 100%;
+            white-space: nowrap;
+            overflow: hidden;
+            box-sizing: border-box;
+            text-align: center;
+            line-height: 1.1;
+        }
+        .t-name {
+            font-weight: 700;
+            color: #000;
+        }
+        .t-phone {
+            font-weight: 600;
+            color: #222;
+            margin-top: 2px;
+        }
+        .t-product {
+            font-weight: 600;
+            color: #333;
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+
+        /* --- Shifted Spacing Rules (Only applied when phone is present) --- */
+        .has-phone .t-phone {
+            margin-bottom: 14px; /* Increases space between phone & product, shifting name/phone upward */
+        }
+        .size-30336.has-phone .t-phone {
+            margin-bottom: 3px;
+        }
+
+        .logo-box img {
+            width: 100%;
+            height: auto;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .check-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 12pt;
+            font-weight: 600;
+            color: #000;
+        }
+        .box-outline {
+            width: 22px;
+            height: 22px;
+            border: 3px solid #000000;
+            box-sizing: border-box;
+            background: #fff;
+        }
+
+        /* --- Absolute Print Mode Rule Locks --- */
+        @media print {
+            html, body {
+                margin: 0 !important;
+                padding: 0 !important;
+                background: #ffffff;
+            }
+            .no-print { display: none !important; }
+            
+            #preview-container {
+                margin: 0 !important;
+                padding: 0 !important;
+                display: block !important;
+            }
+            
+            .label-page {
+                border: none !important;
+                margin: 0 !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                page-break-after: avoid !important;
+            }
+        }
+    </style>
+    <!-- Dynamic Style Block to Inject Absolute Print Size Settings Without Hardcoding Layout Conflicts -->
+    <style id="dynamic-print-media"></style>
+</head>
+<body>
+
+    <header class="main-header no-print">
+        <div class="brand-title">Cyclical Nature Bicycles</div>
+        <nav class="nav-links">
+            <a href="index.html">Cash Labels</a>
+            <a href="bikelabels.html">Bike Labels</a>
+            <a href="specialorders.html" class="active">Special Orders</a>
+            <a href="customeditor.html">Custom Editor</a>
+        </nav>
+    </header>
+
+    <div class="control-panel no-print">
+        <h1>Special Order Ticket Generator</h1>
+
+        <div class="form-group">
+            <label for="val-size">Label Dimensions</label>
+            <select id="val-size">
+                <option value="size-4x6">4 x 6</option>
+                <option value="size-30336">30336 Small Multi-Purpose</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="val-name">Customer Name</label>
+            <input type="text" id="val-name" placeholder="e.g., John Doe" autocomplete="off">
+        </div>
+
+        <div class="form-group">
+            <label for="val-phone">Customer Phone Number (Optional)</label>
+            <input type="text" id="val-phone" placeholder="(123) 456 - 7890" autocomplete="off" oninput="formatPhoneInput(this)">
+        </div>
+
+        <div class="form-group checkbox-row">
+            <input type="checkbox" id="chk-toggle-product" onchange="toggleProductField()" style="transform: scale(1.1); cursor: pointer;">
+            <label for="chk-toggle-product">Include product name below customer?</label>
+        </div>
+
+        <div class="form-group product-input-wrapper" id="product-field-group">
+            <label for="val-product">Product Description / Name</label>
+            <input type="text" id="val-product" placeholder="e.g., RockShox Lyrik Ultimate Fork" autocomplete="off">
+        </div>
+
+        <button onclick="executePrintJob()">Generate & Print Ticket</button>
+    </div>
+
+    <div class="preview-heading no-print" id="ui-title" style="display: none;">Ticket Render Canvas</div>
+    
+    <div id="preview-container"></div>
+
+    <script>
+        // Optional phone formatting logic: (123) 456 - 7890
+        function formatPhoneInput(input) {
+            let digits = input.value.replace(/\D/g, '').substring(0, 10);
+            let formatted = '';
+
+            if (digits.length === 0) {
+                formatted = '';
+            } else if (digits.length <= 3) {
+                formatted = `(${digits}`;
+            } else if (digits.length <= 6) {
+                formatted = `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+            } else {
+                formatted = `(${digits.slice(0, 3)}) ${digits.slice(3, 6)} - ${digits.slice(6)}`;
+            }
+
+            input.value = formatted;
+        }
+
+        // Synchronize interface status maps
+        function toggleProductField() {
+            const isChecked = document.getElementById('chk-toggle-product').checked;
+            const targetContainer = document.getElementById('product-field-group');
+            
+            if (isChecked) {
+                targetContainer.classList.add('active');
+            } else {
+                targetContainer.classList.remove('active');
+                document.getElementById('val-product').value = ''; // Safely wipe input data
+            }
+        }
+
+        // Standardized font engine logic
+        function scaleNodeToFit(node, maxPt) {
+            if (!node) return;
+            let currentPt = maxPt;
+            node.style.fontSize = currentPt + 'pt';
+            while (node.scrollWidth > node.clientWidth && currentPt > 5) {
+                currentPt -= 0.5;
+                node.style.fontSize = currentPt + 'pt';
+            }
+        }
+
+        function executePrintJob() {
+            const customerName = document.getElementById('val-name').value.trim();
+            const customerPhone = document.getElementById('val-phone').value.trim();
+            const includeProduct = document.getElementById('chk-toggle-product').checked;
+            const productName = document.getElementById('val-product').value.trim();
+            const chosenSize = document.getElementById('val-size').value;
+
+            if (!customerName) {
+                alert("Please supply a Customer Name value before running print jobs.");
+                return;
+            }
+            if (includeProduct && !productName) {
+                alert("Product description mode is active. Please input the product name or uncheck the setting.");
+                return;
+            }
+
+            // Target print profile size changes dynamically
+            const printRuleContainer = document.getElementById('dynamic-print-media');
+            if (chosenSize === 'size-30336') {
+                printRuleContainer.innerHTML = `@media print { @page { size: 2.125in 1in; margin: 0 !important; } html, body { width: 2.125in !important; height: 1in !important; } .label-page { width: 2.125in !important; height: 1in !important; } }`;
+            } else {
+                printRuleContainer.innerHTML = `@media print { @page { size: 6in 4in; margin: 0 !important; } html, body { width: 6in !important; height: 4in !important; } .label-page { width: 6in !important; height: 4in !important; } }`;
+            }
+
+            const container = document.getElementById('preview-container');
+            container.innerHTML = ''; // Safely drop previous execution iterations
+
+            const hasPhone = Boolean(customerPhone);
+            const labelPage = document.createElement('div');
+            labelPage.className = `label-page ${chosenSize} ${hasPhone ? 'has-phone' : ''}`;
+            
+            labelPage.innerHTML = `
+                <div class="label-header">
+                    <div class="logo-box">
+                        <img id="logo-node" src="https://i.postimg.cc/hj7x8STM/CNB-final-logo-no-tagline.jpg" alt="Logo">
+                    </div>
+                    <div class="header-title">Special Order</div>
+                </div>
+                <div class="solid-divider"></div>
+                <div class="center-content">
+                    <div class="shrink-text t-name">${customerName}</div>
+                    ${hasPhone ? `<div class="shrink-text t-phone">${customerPhone}</div>` : ''}
+                    ${includeProduct ? `<div class="shrink-text t-product">${productName}</div>` : ''}
+                </div>
+                <div class="bottom-checklist">
+                    <div class="check-item"><div class="box-outline"></div> Ready for Pickup</div>
+                    <div class="check-item"><div class="box-outline"></div> Customer Contacted</div>
+                </div>
+            `;
+
+            container.appendChild(labelPage);
+            document.getElementById('ui-title').style.display = 'block';
+
+            // Wait brief processing frame to calculate dynamic node overflow thresholds accurately
+            setTimeout(() => {
+                if (chosenSize === 'size-30336') {
+                    if (hasPhone) {
+                        scaleNodeToFit(labelPage.querySelector('.t-name'), 13);
+                        scaleNodeToFit(labelPage.querySelector('.t-phone'), 9);
+                        if (includeProduct) scaleNodeToFit(labelPage.querySelector('.t-product'), 7.5);
+                    } else {
+                        scaleNodeToFit(labelPage.querySelector('.t-name'), 16);
+                        if (includeProduct) scaleNodeToFit(labelPage.querySelector('.t-product'), 10);
+                    }
+                } else {
+                    if (hasPhone) {
+                        scaleNodeToFit(labelPage.querySelector('.t-name'), 42);
+                        scaleNodeToFit(labelPage.querySelector('.t-phone'), 26);
+                        if (includeProduct) scaleNodeToFit(labelPage.querySelector('.t-product'), 20);
+                    } else {
+                        scaleNodeToFit(labelPage.querySelector('.t-name'), 54);
+                        if (includeProduct) scaleNodeToFit(labelPage.querySelector('.t-product'), 24);
+                    }
+                }
+
+                // Cache routing gate verification to run printing automation natively
+                const logoImg = document.getElementById('logo-node');
+                const fireSystemPrint = () => {
+                    setTimeout(() => window.print(), 100);
+                };
+
+                if (logoImg.complete) {
+                    fireSystemPrint();
+                } else {
+                    logoImg.onload = fireSystemPrint;
+                    logoImg.onerror = () => {
+                        console.error("Asset tracking pipeline failed to query logo graphic safely.");
+                        fireSystemPrint();
+                    };
+                }
+            }, 50);
+        }
+    </script>
+</body>
+</html>
